@@ -3,8 +3,19 @@ import React from "react";
 export default function PriorityMatrix() {
   return (
     <div className="w-full h-full bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col">
-      {/* Title */}
-      <h2 className="text-lg font-semibold mb-4 text-gray-800">Priority Matrix</h2>
+      {/* Title and Courtesy Link */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold mb-4 text-gray-800">
+          Priority Matrix <a
+          href="https://www.jointaro.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-medium text-purple-800 hover:text-purple-500 transition-all hover:scale-105"
+          >
+            From Taro
+          </a>
+        </h2>
+      </div>
 
       <div className="flex flex-1 items-center justify-center overflow-hidden">
         <div className="w-full max-w-4xl h-full flex flex-col">
