@@ -80,12 +80,12 @@ export default function Home() {
           </div>
 
           {/* Right column */}
-          <div className="flex flex-col min-w-0">
-            <div className="flex-1 mb-4 min-w-0">
+          <div className="flex flex-col min-w-0 h-full">
+            <div className="flex-1 mb-4 min-w-0 min-h-0 overflow-hidden">
               <Tasks />
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 min-h-0">
               <PriorityMatrix />
             </div>
           </div>
