@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer - Implementation Plan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .page-header h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            font-size: 20px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .step-container {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .step-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: white;
+            color: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .step-content {
+            margin-left: 80px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #FFF;
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .item-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .item-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10B981;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .highlight {
+            background: rgba(16, 185, 129, 0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .note-box {
+            background: rgba(251, 191, 36, 0.15);
+            border-left: 4px solid #FBBF24;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+
+        .note-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #FEF3C7;
+        }
+
+        .rationale-box {
+            background: rgba(139, 92, 246, 0.15);
+            border-left: 4px solid #8B5CF6;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+        }
+
+        .rationale-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            margin: 60px 0;
+        }
+
+        @media (max-width: 768px) {
+            .step-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .step-content {
+                margin-left: 0;
+                margin-top: 20px;
+            }
+
+            .page-header h1 {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>🍅 Pomodoro Timer & Task Tracker</h1>
+            <p>Complete Implementation Plan - Step-by-Step Development Roadmap</p>
+        </div>
+
+        <!-- Testing Strategy -->
+        <div class="rationale-box" style="margin-bottom: 40px;">
+            <div class="rationale-title">🧪 Testing Strategy</div>
+            <div style="margin-top: 20px; line-height: 1.8;">
+                <p><strong>Tests will be added at every step where it makes sense to ensure what we create does exactly what it's supposed to do.</strong></p>
+                <ul style="margin-top: 15px; margin-left: 20px; line-height: 2;">
+                    <li style="padding: 4px 0;">Each step includes appropriate tests for the features being implemented</li>
+                    <li style="padding: 4px 0;">Manual testing by you after each step before proceeding to the next</li>
+                    <li style="padding: 4px 0;">PostHog integration (Step 7) will include explicit testing to verify tracking works correctly</li>
+                    <li style="padding: 4px 0;">Final smoke testing on live site after deployment (Step 8)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">Core Timer Functionality & Storage</div>
+            </div>
+            <div class="step-content">
+                <div class="section-title">Includes:</div>
+                <ul class="item-list">
+                    <li>Pomodoro timer with progress bar (<span class="highlight">Option 5: Purple → Pink gradient</span>)</li>
+                    <li>Timer progress starts from <span class="highlight">top</span>, moves <span class="highlight">clockwise</span></li>
+                    <li>Pomodoro circles with clock sweep (black for unfilled parts, fit inside timer)</li>
+                    <li>Keep existing buttons: Play/Pause, Reset, Next</li>
+                    <li>Settings lock when timer running (mins centered above inputs)</li>
+                    <li>Reset button: <span class="highlight">only resets time & pauses</span> (NOT completed stats)</li>
+                    <li><strong>localStorage optimization</strong> - Split into separate keys:
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li style="padding: 4px 0;">• <code>pomodoro-settings</code></li>
+                            <li style="padding: 4px 0;">• <code>pomodoro-stats</code></li>
+                            <li style="padding: 4px 0;">• <code>pomodoro-completed</code></li>
+                            <li style="padding: 4px 0;">• <code>pomodoro-tasks</code> (existing)</li>
+                        </ul>
+                    </li>
+                    <li>Completed section display</li>
+                    <li><strong>Completed section reset button with confirmation dialog</strong> (Option A)</li>
+                    <li><strong>Sound on pomodoro completion</strong></li>
+                </ul>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Deliverable:</div>
+                    Add tests + manual testing by you before proceeding to Step 2
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">Tasks/Subtasks with Priority</div>
+            </div>
+            <div class="step-content">
+                <div class="section-title">Includes:</div>
+                <ul class="item-list">
+                    <li>Preserve <span class="highlight">exact current UI</span> (accordion, red trash cans, drag handles, checkboxes)</li>
+                    <li>Add priority slider (<span class="highlight">valid values: 1, 2, 3, 4, 6, 9</span>)</li>
+                    <li><strong>Backup option:</strong> Grid selector from mockups-tasks-revised.html (if slider doesn't work well)</li>
+                    <li>Priority badge display (Design 10 style: "Priority: High Impact • Low Time")</li>
+                    <li>Slider placed below priority text, above subtasks</li>
+                    <li>Task auto-completion logic</li>
+                    <li>localStorage integration with task priorities</li>
+                </ul>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Deliverable:</div>
+                    Add tests + manual testing by you before proceeding to Step 3
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">Header & Analytics UI</div>
+            </div>
+            <div class="step-content">
+                <div class="section-title">Includes:</div>
+                <ul class="item-list">
+                    <li>Header Design 1 implementation (your selected design)</li>
+                    <li>Feedback icon (speech bubble with !) to <span class="highlight">right of app name</span></li>
+                    <li>Share icons with <span class="highlight">exact SVGs from current Header.tsx</span></li>
+                    <li>Analytics bar <span class="highlight">below header</span> showing:
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li style="padding: 4px 0;">• Total site visits</li>
+                            <li style="padding: 4px 0;">• Total tasks completed</li>
+                            <li style="padding: 4px 0;">• Total pomodoros completed</li>
+                        </ul>
+                    </li>
+                    <li><strong>UI only</strong> - Display stats from localStorage (no PostHog yet)</li>
+                    <li>100% responsive design (Desktop → Tablet → Mobile)</li>
+                </ul>
+
+                <div class="note-box">
+                    <div class="note-title">⚠️ Important:</div>
+                    PostHog integration will happen in <strong>Step 7</strong> (after styling). This step just builds the UI and displays stats from localStorage.
+                </div>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Deliverable:</div>
+                    Add tests + manual testing by you before proceeding to Step 4
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <div class="step-title">New Day Banner</div>
+            </div>
+            <div class="step-content">
+                <div class="section-title">Includes:</div>
+                <ul class="item-list">
+                    <li>Detect when user returns after midnight (new day detection)</li>
+                    <li>Display banner: <span class="highlight">"Welcome back! It's a new day!"</span></li>
+                    <li>Show stats from last session (e.g., "You completed 8 pomodoros in your last session")</li>
+                    <li>Two button options:
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li style="padding: 4px 0;">• <span class="highlight">"Fresh Start"</span> - Resets completed stats</li>
+                            <li style="padding: 4px 0;">• <span class="highlight">"Keep Stats"</span> - Preserves all data</li>
+                        </ul>
+                    </li>
+                    <li>☀️ emoji + orange-to-red gradient styling</li>
+                    <li>Choose from 10 approved banner designs</li>
+                    <li>Banner dismisses after user selects an option</li>
+                </ul>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Deliverable:</div>
+                    Add tests + manual testing by you before proceeding to Step 5
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">5</div>
+                <div class="step-title">Bug Fixes</div>
+            </div>
+            <div class="step-content">
+                <div class="section-title">Includes:</div>
+                <ul class="item-list">
+                    <li><strong>Browser refresh flicker</strong> - Investigate and fix hydration/localStorage loading issues</li>
+                    <li>Any bugs discovered during Steps 1-4</li>
+                    <li>Performance optimization if needed</li>
+                    <li>Edge case handling</li>
+                </ul>
+
+                <div class="note-box">
+                    <div class="note-title">⚠️ Flexible Approach:</div>
+                    If a bug is clearly related to current work in Steps 1-4, will ask you before proceeding. Otherwise, bugs are batched and addressed in this step.
+                </div>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Deliverable:</div>
+                    Testing & verification by you before proceeding to Step 6
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">6</div>
+                <div class="step-title">Final Styling & Polish</div>
+            </div>
+            <div class="step-content">
+                <div class="section-title">Includes:</div>
+                <ul class="item-list">
+                    <li><strong>Comprehensive styling consistency pass</strong> across all components</li>
+                    <li>Ensure all components follow the same design language</li>
+                    <li>Color palette consistency (gradients, backgrounds, text colors)</li>
+                    <li>Typography consistency (font sizes, weights, spacing)</li>
+                    <li>Spacing & padding consistency</li>
+                    <li>Button styles consistency</li>
+                    <li>Responsive behavior verification across all breakpoints:
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li style="padding: 4px 0;">• Desktop (1400px+)</li>
+                            <li style="padding: 4px 0;">• Laptop (1024px - 1399px)</li>
+                            <li style="padding: 4px 0;">• Tablet (768px - 1023px)</li>
+                            <li style="padding: 4px 0;">• Mobile (320px - 767px)</li>
+                        </ul>
+                    </li>
+                    <li>Cross-browser testing (Chrome, Firefox, Safari, Edge)</li>
+                    <li>Animations & transitions polish</li>
+                    <li>Accessibility improvements (ARIA labels, keyboard navigation, focus states)</li>
+                    <li>Final refinements & UX improvements</li>
+                </ul>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Deliverable:</div>
+                    Manual testing by you across multiple devices/browsers before proceeding to Step 7
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 7 -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">7</div>
+                <div class="step-title">PostHog Integration</div>
+            </div>
+            <div class="step-content">
+                <div class="section-title">Includes:</div>
+                <ul class="item-list">
+                    <li>Install and configure PostHog SDK</li>
+                    <li>Track key metrics:
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li style="padding: 4px 0;">• Site visits (page views)</li>
+                            <li style="padding: 4px 0;">• Tasks completed</li>
+                            <li style="padding: 4px 0;">• Pomodoros completed</li>
+                            <li style="padding: 4px 0;">• New day banner interactions (Fresh Start vs Keep Stats)</li>
+                            <li style="padding: 4px 0;">• Priority selections</li>
+                            <li style="padding: 4px 0;">• Share button clicks</li>
+                        </ul>
+                    </li>
+                    <li>Display real-time stats in analytics bar</li>
+                    <li><strong>Public/Private dashboard discussion:</strong>
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li style="padding: 4px 0;">• Option A: Public dashboard (shareable link)</li>
+                            <li style="padding: 4px 0;">• Option B: Private dashboard (your eyes only)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Comprehensive PostHog testing:</strong>
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li style="padding: 4px 0;">• Test all event tracking (site visits, tasks completed, pomodoros completed)</li>
+                            <li style="padding: 4px 0;">• Verify events appear correctly in PostHog dashboard</li>
+                            <li style="padding: 4px 0;">• Test banner interaction tracking (Fresh Start vs Keep Stats)</li>
+                            <li style="padding: 4px 0;">• Verify share button click tracking</li>
+                            <li style="padding: 4px 0;">• Test priority selection tracking</li>
+                            <li style="padding: 4px 0;">• Ensure data accuracy and proper event properties</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <div class="note-box">
+                    <div class="note-title">🎯 Rationale for Timing:</div>
+                    PostHog integration happens <strong>after styling</strong> so that:
+                    <ul style="margin-top: 10px; margin-left: 20px; line-height: 1.8;">
+                        <li style="padding: 4px 0;">• Stats reflect how users <strong>actually use</strong> the polished app</li>
+                        <li style="padding: 4px 0;">• All features are complete and stable (no tracking half-built features)</li>
+                        <li style="padding: 4px 0;">• Analytics accurately represent final user behavior patterns</li>
+                    </ul>
+                </div>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Deliverable:</div>
+                    <strong>Complete PostHog testing</strong> to verify all tracking works correctly + manual verification in PostHog dashboard before proceeding to Step 8
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 8 -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">8</div>
+                <div class="step-title">Hosting & Deployment</div>
+            </div>
+            <div class="step-content">
+                <div class="section-title">Includes:</div>
+                <ul class="item-list">
+                    <li><strong>Choose hosting platform:</strong>
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li style="padding: 4px 0;">• <span class="highlight">Vercel</span> (recommended - simple setup, excellent CI/CD, optimized for Next.js)</li>
+                            <li style="padding: 4px 0;">• Netlify (alternative option)</li>
+                            <li style="padding: 4px 0;">• Other options if preferred</li>
+                        </ul>
+                    </li>
+                    <li>Set up GitHub repository if not already done</li>
+                    <li>Configure CI/CD pipeline:
+                        <ul style="margin-top: 8px; margin-left: 20px;">
+                            <li style="padding: 4px 0;">• Auto-deploy on push to main branch</li>
+                            <li style="padding: 4px 0;">• Preview deployments for branches/PRs</li>
+                        </ul>
+                    </li>
+                    <li>Configure environment variables (PostHog API key, etc.)</li>
+                    <li>Set up custom domain (if desired)</li>
+                    <li>Configure production build optimizations</li>
+                    <li>Set up SSL certificate (automatic with Vercel)</li>
+                    <li>Deploy to production!</li>
+                    <li>Smoke testing on live site</li>
+                    <li>Monitor PostHog for real user data</li>
+                </ul>
+
+                <div class="note-box">
+                    <div class="note-title">✨ Vercel Benefits:</div>
+                    <ul style="margin-top: 10px; margin-left: 20px; line-height: 1.8;">
+                        <li style="padding: 4px 0;">• Zero-config deployment for Next.js</li>
+                        <li style="padding: 4px 0;">• Automatic HTTPS/SSL</li>
+                        <li style="padding: 4px 0;">• Built-in CI/CD (push to GitHub = auto deploy)</li>
+                        <li style="padding: 4px 0;">• Preview deployments for every git push</li>
+                        <li style="padding: 4px 0;">• Global CDN for fast loading worldwide</li>
+                        <li style="padding: 4px 0;">• Free tier for personal projects</li>
+                        <li style="padding: 4px 0;">• Easy rollbacks if needed</li>
+                    </ul>
+                </div>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Deliverable:</div>
+                    Live production URL + verification that all features work in production environment
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Rationale Section -->
+        <div class="rationale-box">
+            <div class="rationale-title">🎯 Implementation Order Rationale</div>
+            <div style="margin-top: 20px; line-height: 1.8;">
+                <p><strong>Why this order works:</strong></p>
+                <ul style="margin-top: 15px; margin-left: 20px; line-height: 2;">
+                    <li style="padding: 4px 0;"><strong>Step 1 first:</strong> Timer is core functionality - everything else depends on it working correctly. localStorage optimization here prevents rework later.</li>
+                    <li style="padding: 4px 0;"><strong>Step 2 second:</strong> Tasks are independent and can be tested in isolation. Priority system builds on localStorage from Step 1.</li>
+                    <li style="padding: 4px 0;"><strong>Step 3 third:</strong> Analytics UI displays stats from features built in Steps 1-2. No point showing analytics for features that don't exist yet.</li>
+                    <li style="padding: 4px 0;"><strong>Step 4 fourth:</strong> Banner references completed stats (Step 1) and can track interactions via PostHog later (Step 7).</li>
+                    <li style="padding: 4px 0;"><strong>Step 5 fifth:</strong> Fix bugs before styling to avoid styling breaking changes.</li>
+                    <li style="padding: 4px 0;"><strong>Step 6 sixth:</strong> Polish styling when all functionality is locked in - prevents rework from functional changes.</li>
+                    <li style="padding: 4px 0;"><strong>Step 7 seventh:</strong> PostHog integration after styling ensures analytics reflect actual user behavior on the polished, final app.</li>
+                    <li style="padding: 4px 0;"><strong>Step 8 last:</strong> Deploy only after everything is complete, tested, and tracking properly.</li>
+                </ul>
+
+                <p style="margin-top: 25px;"><strong>Dependencies respected:</strong></p>
+                <ul style="margin-top: 15px; margin-left: 20px; line-height: 2;">
+                    <li style="padding: 4px 0;">✓ localStorage optimization before tasks need it</li>
+                    <li style="padding: 4px 0;">✓ Core features before analytics UI</li>
+                    <li style="padding: 4px 0;">✓ All functionality before styling</li>
+                    <li style="padding: 4px 0;">✓ Styling before analytics integration</li>
+                    <li style="padding: 4px 0;">✓ Everything complete before deployment</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 60px; font-size: 18px; font-weight: 600; opacity: 0.9;">
+            Ready to proceed with Step 1 when you are! 🚀
+        </div>
+    </div>
+</body>
+</html>
