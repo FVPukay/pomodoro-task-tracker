@@ -1,20 +1,48 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import PomodoroTimer from '@/components/PomodoroTimer';
 import Settings from '@/components/Settings';
 import Completed from '@/components/Completed';
 import Tasks from '@/components/Tasks';
 import PriorityMatrix from '@/components/PriorityMatrix';
+import {
+  loadSettings,
+  loadCompleted,
+  saveSettings,
+  saveCompleted,
+} from '@/lib/storage/pomodoroStorage';
 
 export default function Home() {
+  // Initialize with server-safe defaults to prevent hydration mismatch
   const [completedPomodoros, setCompletedPomodoros] = useState<number>(0);
   const [totalFocusMinutes, setTotalFocusMinutes] = useState<number>(0);
-
   const [focusTime, setFocusTime] = useState<number>(25);
   const [shortBreakTime, setShortBreakTime] = useState<number>(5);
   const [longBreakTime, setLongBreakTime] = useState<number>(30);
+
+  // Load from localStorage after hydration
+  useEffect(() => {
+    const completed = loadCompleted();
+    setCompletedPomodoros(completed.completedPomodoros);
+    setTotalFocusMinutes(completed.totalFocusMinutes);
+
+    const settings = loadSettings();
+    setFocusTime(settings.focusTime);
+    setShortBreakTime(settings.shortBreakTime);
+    setLongBreakTime(settings.longBreakTime);
+  }, []);
+
+  // Persist settings to localStorage whenever they change
+  useEffect(() => {
+    saveSettings({ focusTime, shortBreakTime, longBreakTime });
+  }, [focusTime, shortBreakTime, longBreakTime]);
+
+  // Persist completed stats to localStorage whenever they change
+  useEffect(() => {
+    saveCompleted({ completedPomodoros, totalFocusMinutes });
+  }, [completedPomodoros, totalFocusMinutes]);
 
   // Now receives addedMinutes so we can accumulate minutes when a pomodoro completes.
   const handlePomodoroComplete = (sessionCount: number, addedMinutes?: number) => {

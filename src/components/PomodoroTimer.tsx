@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { loadStats, saveStats } from '@/lib/storage/pomodoroStorage';
 
 interface PomodoroTimerProps {
   focusTime: number;
@@ -18,11 +19,31 @@ export default function PomodoroTimer({
   longBreakTime,
   onPomodoroComplete
 }: PomodoroTimerProps) {
-  const [isRunning, setIsRunning] = useState<boolean>(false);
+  // Initialize with server-safe defaults to prevent hydration mismatch
+  const [isRunning, setIsRunning] = useState<boolean>(false); // Never restore running state
   const [isFocusSession, setIsFocusSession] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(focusTime * 60);
   const [sessionCount, setSessionCount] = useState<number>(0);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [isPaused, setIsPaused] = useState<boolean>(false); // Never restore paused state
+
+  // Load from localStorage after hydration
+  useEffect(() => {
+    const stats = loadStats(focusTime);
+    setIsFocusSession(stats.isFocusSession);
+    setTimeLeft(stats.timeLeft);
+    setSessionCount(stats.sessionCount);
+  }, [focusTime]);
+
+  // Persist timer state to localStorage whenever it changes
+  useEffect(() => {
+    saveStats({
+      sessionCount,
+      isRunning,
+      isFocusSession,
+      timeLeft,
+      isPaused,
+    });
+  }, [sessionCount, isRunning, isFocusSession, timeLeft, isPaused]);
 
   // Update timer display when settings change (only if not running and in focus session)
   useEffect(() => {
