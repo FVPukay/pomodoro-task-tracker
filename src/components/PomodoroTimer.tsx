@@ -55,6 +55,7 @@ export default function PomodoroTimer({
         // Tell parent that a pomodoro completed and how many minutes to add
         onPomodoroComplete(updatedCount, focusTime);
         setIsFocusSession(false);
+        // Long break only after 4th, 8th, 12th, etc. pomodoro
         setTimeLeft(updatedCount % 4 === 0 ? longBreakTime * 60 : shortBreakTime * 60);
       } else {
         // break finished -> go back to focus
@@ -85,30 +86,36 @@ export default function PomodoroTimer({
   };
 
   const handleReset = () => {
+    // Single responsibility: Only reset the current timer, don't change mode or stats
     setIsRunning(false);
-    setIsFocusSession(true);
-    setTimeLeft(focusTime * 60);
-    setSessionCount(0);
-    // Inform parent to reset its counters too
-    onPomodoroComplete(0, 0);
+    setIsPaused(false);
+    // Reset to current mode's time (don't switch modes)
+    if (isFocusSession) {
+      setTimeLeft(focusTime * 60);
+    } else {
+      // Determine which break type based on session count
+      // Long break only after 4th, 8th, 12th, etc. pomodoro
+      const breakTime = (sessionCount > 0 && sessionCount % 4 === 0) ? longBreakTime : shortBreakTime;
+      setTimeLeft(breakTime * 60);
+    }
+    // Don't reset sessionCount, don't call onPomodoroComplete
   };
 
   const handleSkip = () => {
+    // Single responsibility: Only switch mode, preserve running state
     if (isFocusSession) {
-      onPomodoroComplete(sessionCount);
+      // Switch to break
       setIsFocusSession(false);
-      if (sessionCount === 0) {
-        setTimeLeft(shortBreakTime * 60)
-      } else {
-        setTimeLeft(sessionCount % 4 === 0 ? longBreakTime * 60 : shortBreakTime * 60);
-      }
-      setIsRunning(true);
+      // Long break only after 4th, 8th, 12th, etc. pomodoro
+      const breakTime = (sessionCount > 0 && sessionCount % 4 === 0) ? longBreakTime : shortBreakTime;
+      setTimeLeft(breakTime * 60);
     } else {
-      // skip break: go to focus
+      // Switch to focus
       setIsFocusSession(true);
       setTimeLeft(focusTime * 60);
-      setIsRunning(true);
     }
+    // Don't change isRunning - preserve current running state
+    // Don't call onPomodoroComplete - this is a manual skip, not a completion
   };
 
   return (
