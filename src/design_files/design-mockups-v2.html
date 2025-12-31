@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer - Design Mockups V2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 30px;
+            min-height: 100vh;
+        }
+
+        .mockup-container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .section-divider {
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            margin: 100px 0;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 42px;
+            font-weight: bold;
+            margin: 120px 0 40px 0;
+            text-align: center;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+        }
+
+        .section-subtitle {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 50px;
+            text-align: center;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 35px;
+            margin-bottom: 80px;
+        }
+
+        .mockup-card {
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            transition: transform 0.2s;
+        }
+
+        .mockup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .mockup-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4a5568;
+            margin-bottom: 25px;
+            text-align: center;
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #9333EA;
+        }
+
+        /* Timer Styles */
+        .timer-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+        }
+
+        .timer-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: visible;
+        }
+
+        /* Progress ring - now thicker and starts from top */
+        .timer-progress-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .timer-progress-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .timer-progress-ring circle {
+            fill: none;
+            stroke-width: 12;
+        }
+
+        .progress-bg {
+            stroke: transparent;
+        }
+
+        .progress-bar {
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s linear;
+            animation: progressPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .timer-label {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timer-time {
+            color: white;
+            font-size: 64px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Pomodoro Circles - Fixed with solid perimeter */
+        .pomodoro-circles {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+            justify-content: center;
+        }
+
+        .pom-circle {
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+
+        .pom-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .pom-circle circle {
+            fill: none;
+            stroke-width: 3;
+        }
+
+        .pom-bg {
+            stroke: rgba(255,255,255,0.3);
+        }
+
+        .pom-fill {
+            stroke: #EF4444;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s linear;
+        }
+
+        /* Settings Section Styles */
+        .settings-box {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .settings-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .settings-mins {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .settings-label {
+            font-size: 15px;
+            color: #4a5568;
+        }
+
+        .settings-input {
+            width: 80px;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .settings-input:disabled {
+            background: #f7fafc;
+            color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .settings-lock-message {
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        /* Lock Design Variants */
+        .lock-floating {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+        }
+
+        .lock-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .lock-badge {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lock-banner {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left: 4px solid #dc2626;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        /* Task Priority Styles */
+        .task-container {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .task-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .task-item:hover {
+            border-color: #9333EA;
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.15);
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #cbd5e0;
+            border-radius: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .task-title {
+            flex: 1;
+            font-size: 16px;
+            color: #1a202c;
+            font-weight: 500;
+        }
+
+        .priority-badge {
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .priority-badge:hover {
+            transform: scale(1.1);
+        }
+
+        .priority-9 { background: #10B981; }
+        .priority-6 { background: #84CC16; }
+        .priority-4 { background: #F59E0B; }
+        .priority-3 { background: #FBBF24; }
+        .priority-2 { background: #F97316; }
+        .priority-1 { background: #EF4444; }
+
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            margin-left: 34px;
+            background: #f7fafc;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+        .subtask-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #cbd5e0;
+            border-radius: 3px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .subtask-title {
+            flex: 1;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        /* Priority Selector Popup */
+        .priority-selector {
+            position: relative;
+            display: inline-block;
+        }
+
+        .priority-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 8px;
+            z-index: 100;
+            min-width: 200px;
+        }
+
+        .priority-option {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .priority-option:hover {
+            background: #f7fafc;
+        }
+
+        .priority-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Header Styles */
+        .header-mockup {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title {
+            font-size: 26px;
+            font-weight: bold;
+            color: #1a202c;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-size: 15px;
+            color: #4a5568;
+        }
+
+        .header-stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-stat-value {
+            font-weight: 600;
+            color: #1a202c;
+            font-size: 18px;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .share-btn {
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* New Day Banner */
+        .new-day-banner {
+            background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .banner-emoji {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .banner-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .banner-text {
+            font-size: 16px;
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+
+        .banner-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .banner-btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .banner-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .banner-btn.primary {
+            background: white;
+            color: #EF4444;
+        }
+
+        /* Full Layout Mockup */
+        .full-layout {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .full-layout-header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .full-layout-body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .layout-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .layout-box {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px dashed #cbd5e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #4a5568;
+            font-weight: 600;
+            min-height: 150px;
+            text-align: center;
+        }
+
+        /* Responsive demo controls */
+        .responsive-controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .width-slider {
+            flex: 1;
+        }
+
+        .width-value {
+            font-weight: 600;
+            color: #9333EA;
+            min-width: 80px;
+        }
+
+        .resizable-container {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
+        .resizable-frame {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: width 0.3s ease;
+            margin: 0 auto;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="mockup-container">
+        <h1 class="section-title">🎨 Pomodoro Timer - Design Mockups V2 (Revised)</h1>
+        <p class="section-subtitle">Based on your feedback - Interactive mockups with animations and responsive demos</p>
+
+        <div class="section-divider"></div>
+
+        <!-- SECTION 1: Timer Progress Bars with Gradients -->
+        <h2 class="section-title">1️⃣ Timer Progress Bar - Gradient Options (Animated & Thicker)</h2>
+        <p class="section-subtitle">Progress starts from top, moves clockwise, with gradually changing colors. Bar is 3x thicker. Each shows 75% progress.</p>
+
+        <div class="grid-4">
+            <!-- Gradient 1: Pink to Deep Rose -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 1: Pink to Deep Rose<br>#FF69B4 → #DC143C</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad1" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FF69B4"/>
+                                    <stop offset="100%" stop-color="#DC143C"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad1)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle">
+                                <svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg>
+                            </div>
+                            <div class="pom-circle">
+                                <svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg>
+                            </div>
+                            <div class="pom-circle">
+                                <svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg>
+                            </div>
+                            <div class="pom-circle">
+                                <svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient 2: Coral Reef -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 2: Coral Reef<br>#FF7F50 → #FF6347</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad2" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FF7F50"/>
+                                    <stop offset="100%" stop-color="#FF6347"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad2)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient 3: Sunset Blaze -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 3: Sunset Blaze<br>#FFB347 → #FF6B6B</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad3" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FFB347"/>
+                                    <stop offset="50%" stop-color="#FF8C69"/>
+                                    <stop offset="100%" stop-color="#FF6B6B"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad3)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient 4: Rose Gold -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 4: Rose Gold<br>#E0A894 → #C86F4F</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad4" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#E0A894"/>
+                                    <stop offset="100%" stop-color="#C86F4F"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad4)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient 5: Magenta Fusion -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 5: Magenta Fusion<br>#FF1493 → #C71585</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad5" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FF1493"/>
+                                    <stop offset="100%" stop-color="#C71585"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad5)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient 6: Cherry Blossom -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 6: Cherry Blossom<br>#FFB6C1 → #FF69B4</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad6" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FFB6C1"/>
+                                    <stop offset="100%" stop-color="#FF69B4"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad6)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient 7: Peachy Keen -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 7: Peachy Keen<br>#FFDAB9 → #FFB07C</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad7" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FFDAB9"/>
+                                    <stop offset="100%" stop-color="#FFB07C"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad7)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient 8: Watermelon -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 8: Watermelon<br>#FC6C85 → #F38BA8</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad8" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FC6C85"/>
+                                    <stop offset="100%" stop-color="#F38BA8"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad8)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient 9: Purple Passion -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 9: Purple Passion<br>#9333EA → #06B6D4</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad9" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#9333EA"/>
+                                    <stop offset="100%" stop-color="#06B6D4"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad9)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradient 10: Fire & Ice -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 10: Fire & Ice<br>#EF4444 → #3B82F6</div>
+                <div class="timer-container">
+                    <div class="timer-progress-ring">
+                        <svg>
+                            <defs>
+                                <linearGradient id="grad10" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#EF4444"/>
+                                    <stop offset="50%" stop-color="#EC4899"/>
+                                    <stop offset="100%" stop-color="#3B82F6"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="150" cy="150" r="140"/>
+                            <circle class="progress-bar" cx="150" cy="150" r="140"
+                                    stroke="url(#grad10)"
+                                    stroke-dasharray="879.6"
+                                    stroke-dashoffset="219.9"/>
+                        </svg>
+                    </div>
+                    <div class="timer-circle">
+                        <div class="timer-label">Focus</div>
+                        <div class="timer-time">18:45</div>
+                        <div class="pomodoro-circles">
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="0"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/><circle class="pom-fill" cx="20" cy="20" r="17" stroke-dasharray="107" stroke-dashoffset="40"/></svg></div>
+                            <div class="pom-circle"><svg><circle class="pom-bg" cx="20" cy="20" r="17"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- SECTION 3: Settings Lock Variants -->
+        <h2 class="section-title">3️⃣ Settings Lock Design - 10 Creative Variants</h2>
+        <p class="section-subtitle">Different ways to show locked settings. Note: "mins" is now positioned like in your current app.</p>
+
+        <div class="grid-3">
+            <!-- Variant 1: Box with message (original) -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 1: Message Box (Original)</div>
+                <div class="settings-box">
+                    <div class="settings-header">
+                        <div class="settings-title">SETTINGS</div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <input type="number" class="settings-input" value="25" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                    <div class="settings-lock-message">
+                        <span style="font-size: 18px;">🔒</span>
+                        <span>Settings locked while timer is running</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant 2: Floating lock icon -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 2: Floating Lock Icon</div>
+                <div class="settings-box" style="position: relative;">
+                    <div class="lock-floating">🔒</div>
+                    <div class="settings-header">
+                        <div class="settings-title">SETTINGS</div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <input type="number" class="settings-input" value="25" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                    <div style="margin-top: 15px; text-align: center; font-size: 12px; color: #718096;">
+                        Locked while timer is running
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant 3: Inline lock with title -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 3: Inline Lock with Title</div>
+                <div class="settings-box">
+                    <div class="settings-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="settings-title">SETTINGS</div>
+                            <span style="font-size: 16px;">🔒</span>
+                        </div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <input type="number" class="settings-input" value="25" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 12px; color: #718096; text-align: center;">
+                        Timer running - settings locked
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant 4: Badge style -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 4: Badge Style</div>
+                <div class="settings-box">
+                    <div class="settings-header">
+                        <div class="settings-title">SETTINGS</div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <input type="number" class="settings-input" value="25" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <span class="lock-badge">🔒 Locked</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant 5: Semi-transparent overlay -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 5: Semi-Transparent Overlay</div>
+                <div class="settings-box" style="position: relative;">
+                    <div class="settings-header">
+                        <div class="settings-title">SETTINGS</div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <input type="number" class="settings-input" value="25" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                    <div class="lock-overlay">
+                        <div style="font-size: 48px;">🔒</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant 6: Banner style -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 6: Banner Alert</div>
+                <div class="settings-box">
+                    <div class="settings-header">
+                        <div class="settings-title">SETTINGS</div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <input type="number" class="settings-input" value="25" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                    <div class="lock-banner">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #991b1b;">
+                            <span style="font-size: 16px;">🔒</span>
+                            <span>Timer running - settings temporarily locked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant 7: Minimalist -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 7: Minimalist (Icon Only)</div>
+                <div class="settings-box" style="position: relative; opacity: 0.6;">
+                    <div style="position: absolute; top: 15px; right: 15px; font-size: 20px;">🔒</div>
+                    <div class="settings-header">
+                        <div class="settings-title">SETTINGS</div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <input type="number" class="settings-input" value="25" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant 8: Tooltip style -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 8: Tooltip on Hover</div>
+                <div class="settings-box" style="position: relative;">
+                    <div class="settings-header">
+                        <div class="settings-title">SETTINGS</div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <div style="position: relative;">
+                            <input type="number" class="settings-input" value="25" disabled>
+                            <div style="position: absolute; bottom: 100%; right: 0; background: #1a202c; color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; white-space: nowrap; margin-bottom: 8px; display: none;">
+                                🔒 Locked while timer runs
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                    <div style="margin-top: 15px; text-align: center; font-size: 20px;">🔒</div>
+                </div>
+            </div>
+
+            <!-- Variant 9: Striped background -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 9: Striped Background</div>
+                <div class="settings-box" style="background: repeating-linear-gradient(45deg, #ffffff, #ffffff 10px, #f7fafc 10px, #f7fafc 20px);">
+                    <div class="settings-header">
+                        <div class="settings-title">SETTINGS</div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <input type="number" class="settings-input" value="25" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                    <div style="margin-top: 15px; text-align: center; font-size: 14px; color: #4a5568; font-weight: 600;">
+                        🔒 LOCKED
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant 10: Colored border -->
+            <div class="mockup-card">
+                <div class="mockup-label">Variant 10: Colored Border Alert</div>
+                <div class="settings-box" style="border: 3px solid #ef4444;">
+                    <div class="settings-header">
+                        <div class="settings-title">SETTINGS</div>
+                        <div class="settings-mins">mins</div>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Focus</span>
+                        <input type="number" class="settings-input" value="25" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Short Break</span>
+                        <input type="number" class="settings-input" value="5" disabled>
+                    </div>
+                    <div class="settings-row">
+                        <span class="settings-label">Long Break</span>
+                        <input type="number" class="settings-input" value="30" disabled>
+                    </div>
+                    <div style="margin-top: 15px; text-align: center; font-size: 13px; color: #ef4444; font-weight: 600;">
+                        🔒 SETTINGS LOCKED WHILE TIMER IS RUNNING
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="height: 100px;"></div>
+
+        <p class="section-subtitle" style="margin-top: 50px; font-size: 18px;">
+            ⚠️ Note: Due to the extensive nature of your requests (20 task priority designs, 20 header designs, 10 banner designs, and 4 full layout mockups with responsive demos), this file is getting very large. I'm creating this in sections. Please review what's above, and I'll continue with the remaining sections in the next iteration based on your feedback.
+        </p>
+
+    </div>
+
+</body>
+</html>

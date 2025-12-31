@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Priority Selection - REVISED</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .page-header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .confirmation-box {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto 60px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .confirmation-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .confirmation-list {
+            font-size: 16px;
+            line-height: 1.8;
+            opacity: 0.95;
+        }
+
+        .confirmation-list li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        .mockup-section {
+            margin-bottom: 100px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 60px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .mockup-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .mockup-label {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .mockup-description {
+            font-size: 15px;
+            opacity: 0.9;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* Task Component Styles */
+        .tasks-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            color: #333;
+        }
+
+        .task-item {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .task-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: #999;
+            font-size: 18px;
+            user-select: none;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .accordion-toggle {
+            cursor: pointer;
+            color: #667eea;
+            font-size: 16px;
+            transition: transform 0.2s ease;
+            user-select: none;
+        }
+
+        .accordion-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .task-title-text {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Priority Badge Styles */
+        .priority-badge {
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .priority-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .priority-9 { background: linear-gradient(135deg, #10B981, #059669); }
+        .priority-6 { background: linear-gradient(135deg, #84CC16, #65A30D); }
+        .priority-4 { background: linear-gradient(135deg, #F59E0B, #D97706); }
+        .priority-2 { background: linear-gradient(135deg, #F97316, #EA580C); }
+
+        /* Subtask Styles */
+        .subtask-list {
+            margin-left: 50px;
+            margin-top: 8px;
+        }
+
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .subtask-drag-handle {
+            cursor: grab;
+            color: #ccc;
+            font-size: 14px;
+            user-select: none;
+        }
+
+        .subtask-drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .subtask-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #999;
+            border-radius: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .subtask-title {
+            flex: 1;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .trash-icon {
+            cursor: pointer;
+            font-size: 18px;
+            color: #999;
+            transition: color 0.2s ease;
+        }
+
+        .trash-icon:hover {
+            color: #ef4444;
+        }
+
+        /* Priority Selector Popup */
+        .priority-popup {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 16px;
+            min-width: 300px;
+            z-index: 10;
+            display: none;
+        }
+
+        .priority-popup.show {
+            display: block;
+        }
+
+        .priority-popup-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .priority-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .priority-option {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .priority-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Design 9: Visual Grid Selector */
+        .design-9 .priority-selector {
+            position: relative;
+        }
+
+        /* Design 10: Tag-Style Priority */
+        .design-10 .priority-badge {
+            border-radius: 6px;
+            padding: 5px 12px;
+        }
+
+        /* Design 20: Interactive Slider */
+        .design-20 .priority-slider-container {
+            position: relative;
+            width: 120px;
+        }
+
+        .design-20 .priority-slider-bar {
+            position: relative;
+            height: 8px;
+            background: linear-gradient(90deg, #EF4444, #F59E0B, #84CC16, #10B981);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .design-20 .priority-slider-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #333;
+            cursor: grab;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            margin: 80px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>Task Priority Selection - REVISED</h1>
+        <p><strong>Updated to show:</strong> (1) Accordion expand/collapse arrows, (2) Trash can icons, (3) Drag handles for moving tasks/subtasks. All existing UI functionality is preserved.</p>
+    </div>
+
+    <div class="confirmation-box">
+        <div class="confirmation-title">✓ Confirmation: Existing UI Preserved</div>
+        <ul class="confirmation-list">
+            <li><strong>Accordion:</strong> Yes, the expand/collapse functionality (▸ arrow) is included and shown in all designs below</li>
+            <li><strong>Trash Cans:</strong> Changed from X to 🗑️ trash can icons for deleting subtasks</li>
+            <li><strong>Drag Handles:</strong> ⋮⋮ icons shown for reordering tasks and subtasks</li>
+            <li><strong>Checkboxes:</strong> Task and subtask checkboxes remain functional</li>
+            <li><strong>Priority Badge:</strong> The only NEW element - allows setting/changing task priority</li>
+        </ul>
+    </div>
+
+    <div class="mockup-section">
+        <h2 class="section-title">Top 3 Designs You Liked (With Full UI)</h2>
+
+        <div class="mockup-grid">
+            <!-- Design 9: Visual Grid Selector -->
+            <div class="mockup-card design-9">
+                <div class="mockup-label">Design 9: Visual Grid Selector</div>
+                <div class="mockup-description">Click the priority badge to open a 3x3 grid selector matching the Priority Matrix. All existing UI elements preserved.</div>
+
+                <div class="tasks-container">
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="drag-handle">⋮⋮</span>
+                            <span class="accordion-toggle expanded">▸</span>
+                            <div class="task-checkbox"></div>
+                            <div class="task-title-text">Implement user authentication system</div>
+                            <div class="priority-selector">
+                                <div class="priority-badge priority-9">9</div>
+                                <div class="priority-popup show">
+                                    <div class="priority-popup-title">Select Priority</div>
+                                    <div class="priority-grid">
+                                        <div class="priority-option priority-9">9</div>
+                                        <div class="priority-option" style="background: #059669;">8</div>
+                                        <div class="priority-option" style="background: #84CC16;">7</div>
+                                        <div class="priority-option" style="background: #65A30D;">6</div>
+                                        <div class="priority-option" style="background: #F59E0B;">5</div>
+                                        <div class="priority-option" style="background: #D97706;">4</div>
+                                        <div class="priority-option" style="background: #FBBF24;">3</div>
+                                        <div class="priority-option" style="background: #F97316;">2</div>
+                                        <div class="priority-option" style="background: #EF4444;">1</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subtask-list">
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Set up authentication library</div>
+                                <span class="trash-icon">🗑️</span>
+                            </div>
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Design login UI components</div>
+                                <span class="trash-icon">🗑️</span>
+                            </div>
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Implement password reset flow</div>
+                                <span class="trash-icon">🗑️</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="drag-handle">⋮⋮</span>
+                            <span class="accordion-toggle">▸</span>
+                            <div class="task-checkbox"></div>
+                            <div class="task-title-text">Optimize database queries (collapsed)</div>
+                            <div class="priority-badge priority-6">6</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Design 10: Tag-Style Priority -->
+            <div class="mockup-card design-10">
+                <div class="mockup-label">Design 10: Tag-Style Priority Label</div>
+                <div class="mockup-description">Rectangular tag with rounded corners. Shows accordion, trash cans, and drag handles.</div>
+
+                <div class="tasks-container">
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="drag-handle">⋮⋮</span>
+                            <span class="accordion-toggle expanded">▸</span>
+                            <div class="task-checkbox"></div>
+                            <div class="task-title-text">Build real-time notification system</div>
+                            <div class="priority-badge priority-9">9</div>
+                        </div>
+                        <div class="subtask-list">
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Set up WebSocket server</div>
+                                <span class="trash-icon">🗑️</span>
+                            </div>
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Design notification UI</div>
+                                <span class="trash-icon">🗑️</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="drag-handle">⋮⋮</span>
+                            <span class="accordion-toggle expanded">▸</span>
+                            <div class="task-checkbox"></div>
+                            <div class="task-title-text">Refactor CSS architecture</div>
+                            <div class="priority-badge priority-4">4</div>
+                        </div>
+                        <div class="subtask-list">
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Audit current CSS structure</div>
+                                <span class="trash-icon">🗑️</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="drag-handle">⋮⋮</span>
+                            <span class="accordion-toggle">▸</span>
+                            <div class="task-checkbox"></div>
+                            <div class="task-title-text">Update documentation (collapsed)</div>
+                            <div class="priority-badge priority-2">2</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Design 20: Interactive Slider -->
+            <div class="mockup-card design-20">
+                <div class="mockup-label">Design 20: Interactive Priority Slider</div>
+                <div class="mockup-description">Compact horizontal slider with gradient colors. Drag the circle to change priority. Minimal space usage with full UI functionality.</div>
+
+                <div class="tasks-container">
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="drag-handle">⋮⋮</span>
+                            <span class="accordion-toggle expanded">▸</span>
+                            <div class="task-checkbox"></div>
+                            <div class="task-title-text">Implement API caching layer</div>
+                            <div class="priority-slider-container">
+                                <div class="priority-slider-bar">
+                                    <div class="priority-slider-thumb" style="left: 90%;">9</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subtask-list">
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Research caching strategies</div>
+                                <span class="trash-icon">��️</span>
+                            </div>
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Implement Redis integration</div>
+                                <span class="trash-icon">🗑️</span>
+                            </div>
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Test cache invalidation</div>
+                                <span class="trash-icon">🗑️</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="drag-handle">⋮⋮</span>
+                            <span class="accordion-toggle expanded">▸</span>
+                            <div class="task-checkbox"></div>
+                            <div class="task-title-text">Add email notification service</div>
+                            <div class="priority-slider-container">
+                                <div class="priority-slider-bar">
+                                    <div class="priority-slider-thumb" style="left: 55%;">5</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subtask-list">
+                            <div class="subtask-item">
+                                <span class="subtask-drag-handle">⋮⋮</span>
+                                <div class="subtask-checkbox"></div>
+                                <div class="subtask-title">Set up email provider</div>
+                                <span class="trash-icon">🗑️</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="drag-handle">⋮⋮</span>
+                            <span class="accordion-toggle">▸</span>
+                            <div class="task-checkbox"></div>
+                            <div class="task-title-text">Write unit tests (collapsed)</div>
+                            <div class="priority-slider-container">
+                                <div class="priority-slider-bar">
+                                    <div class="priority-slider-thumb" style="left: 20%;">2</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

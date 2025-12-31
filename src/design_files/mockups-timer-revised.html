@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer Progress & Pomodoro Circles - REVISED</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .page-header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .mockup-section {
+            margin-bottom: 120px;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .mockup-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .mockup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .mockup-label {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+            opacity: 0.95;
+        }
+
+        /* Timer with Progress Ring */
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .timer-progress-ring {
+            width: 320px;
+            height: 320px;
+            position: relative;
+        }
+
+        .timer-progress-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .timer-progress-ring circle {
+            fill: none;
+            stroke-width: 16;
+        }
+
+        .progress-bg {
+            stroke: rgba(255, 255, 255, 0.15);
+        }
+
+        .progress-bar {
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s linear;
+        }
+
+        .timer-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .timer-time {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .timer-label {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* Pomodoro Circles with Clock Sweep */
+        .pomodoro-circles {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .pom-circle {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+
+        .pom-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .pom-bg-circle {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 3;
+        }
+
+        .pom-sweep {
+            fill: none;
+            stroke-linecap: round;
+            stroke-width: 3;
+            transition: stroke-dashoffset 0.3s linear;
+        }
+
+        /* Gradient Definitions for Different Options */
+
+        /* Option 1: Pink to Red */
+        .gradient-1 .progress-bar {
+            stroke: url(#grad1);
+        }
+        .gradient-1 .pom-sweep {
+            stroke: url(#grad1);
+        }
+
+        /* Option 2: Blue to Purple */
+        .gradient-2 .progress-bar {
+            stroke: url(#grad2);
+        }
+        .gradient-2 .pom-sweep {
+            stroke: url(#grad2);
+        }
+
+        /* Option 3: Green to Teal */
+        .gradient-3 .progress-bar {
+            stroke: url(#grad3);
+        }
+        .gradient-3 .pom-sweep {
+            stroke: url(#grad3);
+        }
+
+        /* Option 4: Orange to Red */
+        .gradient-4 .progress-bar {
+            stroke: url(#grad4);
+        }
+        .gradient-4 .pom-sweep {
+            stroke: url(#grad4);
+        }
+
+        /* Option 5: Purple to Pink */
+        .gradient-5 .progress-bar {
+            stroke: url(#grad5);
+        }
+        .gradient-5 .pom-sweep {
+            stroke: url(#grad5);
+        }
+
+        /* Option 6: Yellow to Orange */
+        .gradient-6 .progress-bar {
+            stroke: url(#grad6);
+        }
+        .gradient-6 .pom-sweep {
+            stroke: url(#grad6);
+        }
+
+        /* Option 7: Cyan to Blue */
+        .gradient-7 .progress-bar {
+            stroke: url(#grad7);
+        }
+        .gradient-7 .pom-sweep {
+            stroke: url(#grad7);
+        }
+
+        /* Option 8: Red to Purple */
+        .gradient-8 .progress-bar {
+            stroke: url(#grad8);
+        }
+        .gradient-8 .pom-sweep {
+            stroke: url(#grad8);
+        }
+
+        /* Option 9: Lime to Green */
+        .gradient-9 .progress-bar {
+            stroke: url(#grad9);
+        }
+        .gradient-9 .pom-sweep {
+            stroke: url(#grad9);
+        }
+
+        /* Option 10: Coral to Rose */
+        .gradient-10 .progress-bar {
+            stroke: url(#grad10);
+        }
+        .gradient-10 .pom-sweep {
+            stroke: url(#grad10);
+        }
+
+        .progress-note {
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.85;
+            margin-top: 15px;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            margin: 100px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>Timer Progress & Pomodoro Circles - REVISED</h1>
+        <p><strong>Fixed Issues:</strong> (1) Added progress bars to pomodoro circles with clock sweep animation, (2) Shows progressive gradient color changes as timer counts down from top clockwise</p>
+    </div>
+
+    <!-- SVG Gradient Definitions -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <!-- Gradient 1: Pink to Red -->
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FF69B4;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#FF1493;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#DC143C;stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Gradient 2: Blue to Purple -->
+            <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#6366F1;stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Gradient 3: Green to Teal -->
+            <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#14B8A6;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Gradient 4: Orange to Red -->
+            <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FF8C00;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#FF6347;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#DC143C;stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Gradient 5: Purple to Pink -->
+            <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#9333EA;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#C026D3;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Gradient 6: Yellow to Orange -->
+            <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#F59E0B;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#F97316;stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Gradient 7: Cyan to Blue -->
+            <linearGradient id="grad7" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#0EA5E9;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Gradient 8: Red to Purple -->
+            <linearGradient id="grad8" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#EF4444;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#DC2626;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Gradient 9: Lime to Green -->
+            <linearGradient id="grad9" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#84CC16;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#22C55E;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#10B981;stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Gradient 10: Coral to Rose -->
+            <linearGradient id="grad10" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FB7185;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#F43F5E;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#E11D48;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <div class="mockup-section">
+        <h2 class="section-title">Timer Progress Bars with Progressive Gradients</h2>
+
+        <div class="mockup-grid">
+            <!-- Option 1: Pink to Red -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 1: Pink → Red (Progressive)</div>
+                <div class="timer-container gradient-1">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="238.64"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">18:45</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="34.54"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="69.08"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="103.62"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">75% complete - Color transitions from pink → crimson → red as bar progresses clockwise from top</div>
+                </div>
+            </div>
+
+            <!-- Option 2: Blue to Purple -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 2: Blue → Purple (Progressive)</div>
+                <div class="timer-container gradient-2">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="477.28"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">12:30</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="69.08"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">50% complete - Color shifts from bright blue → violet → indigo throughout progress</div>
+                </div>
+            </div>
+
+            <!-- Option 3: Green to Teal -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 3: Green → Teal (Progressive)</div>
+                <div class="timer-container gradient-3">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="143.18"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">21:15</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="20.72"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="103.62"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">85% complete - Gradient flows from emerald → turquoise → cyan during countdown</div>
+                </div>
+            </div>
+
+            <!-- Option 4: Orange to Red -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 4: Orange → Red (Progressive)</div>
+                <div class="timer-container gradient-4">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="286.37"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">17:30</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="41.45"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">70% complete - Warm gradient transitions dark orange → tomato → crimson</div>
+                </div>
+            </div>
+
+            <!-- Option 5: Purple to Pink -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 5: Purple → Pink (Progressive)</div>
+                <div class="timer-container gradient-5">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="191.91"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">20:00</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="55.26"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">80% complete - Rich gradient moves from violet → fuchsia → hot pink</div>
+                </div>
+            </div>
+
+            <!-- Option 6: Yellow to Orange -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 6: Yellow → Orange (Progressive)</div>
+                <div class="timer-container gradient-6">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="572.74"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">10:00</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">40% complete - Sunny gradient progresses amber → gold → orange</div>
+                </div>
+            </div>
+
+            <!-- Option 7: Cyan to Blue -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 7: Cyan → Blue (Progressive)</div>
+                <div class="timer-container gradient-7">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="668.19"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">07:30</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">30% complete - Cool gradient shifts cyan → sky blue → royal blue</div>
+                </div>
+            </div>
+
+            <!-- Option 8: Red to Purple -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 8: Red → Purple (Progressive)</div>
+                <div class="timer-container gradient-8">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="95.46"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">22:30</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="27.63"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">90% complete - Bold gradient evolves red → crimson → deep purple</div>
+                </div>
+            </div>
+
+            <!-- Option 9: Lime to Green -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 9: Lime → Green (Progressive)</div>
+                <div class="timer-container gradient-9">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="381.82"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">15:00</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="82.90"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="138.16"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">60% complete - Fresh gradient transitions lime → grass green → emerald</div>
+                </div>
+            </div>
+
+            <!-- Option 10: Coral to Rose -->
+            <div class="mockup-card">
+                <div class="mockup-label">Option 10: Coral → Rose (Progressive)</div>
+                <div class="timer-container gradient-10">
+                    <div class="timer-progress-ring">
+                        <svg viewBox="0 0 320 320">
+                            <circle class="progress-bg" cx="160" cy="160" r="152"/>
+                            <circle class="progress-bar" cx="160" cy="160" r="152"
+                                    stroke-dasharray="954.56"
+                                    stroke-dashoffset="763.65"/>
+                        </svg>
+                        <div class="timer-display">
+                            <div class="timer-time">05:00</div>
+                            <div class="timer-label">Focus Session</div>
+                        </div>
+                    </div>
+                    <div class="pomodoro-circles">
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="0"/>
+                            </svg>
+                        </div>
+                        <div class="pom-circle">
+                            <svg viewBox="0 0 50 50">
+                                <circle class="pom-bg-circle" cx="25" cy="25" r="22"/>
+                                <circle class="pom-sweep" cx="25" cy="25" r="22"
+                                        stroke-dasharray="138.16"
+                                        stroke-dashoffset="110.53"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="progress-note">20% complete - Soft gradient flows coral → rose → deep rose</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

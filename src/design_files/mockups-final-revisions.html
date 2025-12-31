@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Design Revisions - Pomodoro Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .page-header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            margin: 100px 0;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .mockup-container {
+            max-width: 1200px;
+            margin: 0 auto 80px;
+        }
+
+        .mockup-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 40px;
+        }
+
+        .mockup-label {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* POMODORO CIRCLE - Clock Sweep (like Addy Osmani example) */
+        .pomodoro-demo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pom-circle-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .pom-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #EF4444;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Mask overlay to create clock sweep effect - ONLY shows red */
+        .pom-circle::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform-origin: center center;
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%);
+        }
+
+        /* Different progress states */
+        .pom-circle.progress-25::after {
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 75% 100%);
+        }
+
+        .pom-circle.progress-50::after {
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%);
+        }
+
+        .pom-circle.progress-75::after {
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 25%);
+        }
+
+        .pom-circle.completed::after {
+            display: none;
+        }
+
+        .pom-circle.empty {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .pom-circle.empty::after {
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%);
+        }
+
+        /* HEADER ANALYTICS - Using exact icons from Header.tsx */
+        .header-demo {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 24px 30px;
+            color: white;
+        }
+
+        .header-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .feedback-icon {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .feedback-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .share-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .share-label-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .share-text {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .share-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .share-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .share-btn.email {
+            background: #3B82F6;
+        }
+
+        .share-btn.twitter {
+            background: #000000;
+        }
+
+        .share-btn.facebook {
+            background: #3B82F6;
+        }
+
+        .share-btn.reddit {
+            background: #FF4500;
+        }
+
+        /* Analytics Bar */
+        .analytics-bar {
+            padding: 16px 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .analytics-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        /* Design variations */
+        .design-1 .analytics-bar {
+            background: #f8f9fa;
+        }
+
+        .design-2 .analytics-bar {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .design-5 .analytics-bar {
+            background: rgba(102, 126, 234, 0.08);
+        }
+
+        /* TASK PRIORITY - Design 10 variations */
+        .tasks-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            color: #333;
+        }
+
+        .task-item {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .task-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: #999;
+            font-size: 16px;
+            user-select: none;
+        }
+
+        .accordion-toggle {
+            cursor: pointer;
+            color: #667eea;
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .accordion-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .task-title-text {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .priority-tag {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+        }
+
+        .priority-9 { background: linear-gradient(135deg, #10B981, #059669); }
+        .priority-7 { background: linear-gradient(135deg, #84CC16, #65A30D); }
+        .priority-6 { background: linear-gradient(135deg, #84CC16, #65A30D); }
+        .priority-5 { background: linear-gradient(135deg, #F59E0B, #D97706); }
+        .priority-3 { background: linear-gradient(135deg, #FBBF24, #F59E0B); }
+        .priority-1 { background: linear-gradient(135deg, #EF4444, #DC2626); }
+
+        /* Subtasks */
+        .subtask-list {
+            margin-left: 48px;
+            margin-top: 8px;
+        }
+
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .subtask-drag-handle {
+            cursor: grab;
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        .subtask-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #999;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .subtask-title {
+            flex: 1;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .trash-icon {
+            cursor: pointer;
+            color: #ef4444;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .trash-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* Priority Slider (from Design 20) */
+        .priority-slider-container {
+            width: 130px;
+        }
+
+        .priority-slider-bar {
+            position: relative;
+            height: 8px;
+            background: linear-gradient(90deg, #EF4444, #F59E0B, #84CC16, #10B981);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .priority-slider-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #333;
+            cursor: grab;
+        }
+
+        /* Grid Selector (revised from Design 9) */
+        .priority-grid-selector {
+            position: relative;
+        }
+
+        .priority-popup {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 16px;
+            min-width: 240px;
+            z-index: 10;
+        }
+
+        .priority-popup-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .priority-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .priority-option {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .priority-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .grid-3x3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .share-row {
+                flex-direction: column;
+            }
+
+            .analytics-content {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>Final Design Revisions</h1>
+        <p>Addressing all feedback with corrected designs</p>
+    </div>
+
+    <!-- SECTION 1: POMODORO CIRCLE CLOCK SWEEP -->
+    <div class="mockup-container">
+        <h2 class="section-title">1. Pomodoro Circle - Clock Sweep</h2>
+        <p class="section-subtitle">Based on Addy Osmani example. Shows ONLY red color as it sweeps clockwise from top. No black or orange artifacts.</p>
+
+        <div class="mockup-card">
+            <div class="mockup-label">Clock Sweep Animation - Different Progress States</div>
+            <div class="pomodoro-demo">
+                <div style="display: flex; gap: 30px; align-items: center;">
+                    <div>
+                        <div class="pom-circle-wrapper">
+                            <div class="pom-circle empty"></div>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px; font-size: 14px;">0% (Empty)</div>
+                    </div>
+
+                    <div>
+                        <div class="pom-circle-wrapper">
+                            <div class="pom-circle progress-25"></div>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px; font-size: 14px;">25%</div>
+                    </div>
+
+                    <div>
+                        <div class="pom-circle-wrapper">
+                            <div class="pom-circle progress-50"></div>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px; font-size: 14px;">50%</div>
+                    </div>
+
+                    <div>
+                        <div class="pom-circle-wrapper">
+                            <div class="pom-circle progress-75"></div>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px; font-size: 14px;">75%</div>
+                    </div>
+
+                    <div>
+                        <div class="pom-circle-wrapper">
+                            <div class="pom-circle completed"></div>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px; font-size: 14px;">100% (Complete)</div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; text-align: center; font-size: 15px; opacity: 0.9;">
+                ✓ Only shows red color (#EF4444) as the circle fills<br>
+                ✓ Sweeps clockwise starting from top<br>
+                ✓ No black, orange, or other color artifacts<br>
+                ✓ Uses clip-path technique like Addy Osmani example
+            </div>
+        </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- SECTION 2: HEADER WITH EXACT ICONS -->
+    <div class="mockup-container">
+        <h2 class="section-title">2. Header with Analytics - Using Exact Icons</h2>
+        <p class="section-subtitle">Using the same exact SVG icons from Header.tsx. Feedback icon (💬 with !) to the right of app name. Your favorites: Designs 1, 2, and 5.</p>
+
+        <!-- Design 1: Clean Horizontal Bar -->
+        <div class="mockup-card">
+            <div class="mockup-label">Design 1: Clean Horizontal Bar (Your Favorite)</div>
+            <div class="header-demo design-1">
+                <div class="app-header">
+                    <div class="header-title-row">
+                        <h1 class="header-title">Pomodoro Timer & Task Tracker</h1>
+                        <div class="feedback-icon">
+                            <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="share-row">
+                        <div class="share-label-group">
+                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                            </svg>
+                            <span class="share-text">SHARE</span>
+                        </div>
+
+                        <div class="share-buttons">
+                            <div class="share-btn email">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                </svg>
+                            </div>
+
+                            <div class="share-btn twitter">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                            </div>
+
+                            <div class="share-btn facebook">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                </svg>
+                            </div>
+
+                            <div class="share-btn reddit">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-bar">
+                    <div class="analytics-content">
+                        <div class="stat-item">
+                            <span class="stat-value">1,247</span>
+                            <span class="stat-label">visits</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">89</span>
+                            <span class="stat-label">tasks completed</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">156</span>
+                            <span class="stat-label">pomodoros</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design 2: White with Subtle Shadow -->
+        <div class="mockup-card">
+            <div class="mockup-label">Design 2: White with Subtle Shadow (Your Favorite)</div>
+            <div class="header-demo design-2">
+                <div class="app-header">
+                    <div class="header-title-row">
+                        <h1 class="header-title">Pomodoro Timer & Task Tracker</h1>
+                        <div class="feedback-icon">
+                            <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="share-row">
+                        <div class="share-label-group">
+                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                            </svg>
+                            <span class="share-text">SHARE</span>
+                        </div>
+
+                        <div class="share-buttons">
+                            <div class="share-btn email">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                </svg>
+                            </div>
+
+                            <div class="share-btn twitter">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                            </div>
+
+                            <div class="share-btn facebook">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                </svg>
+                            </div>
+
+                            <div class="share-btn reddit">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-bar">
+                    <div class="analytics-content">
+                        <div class="stat-item">
+                            <span class="stat-value">1,247</span>
+                            <span class="stat-label">visits</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">89</span>
+                            <span class="stat-label">tasks completed</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">156</span>
+                            <span class="stat-label">pomodoros</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design 5: Light Purple Background -->
+        <div class="mockup-card">
+            <div class="mockup-label">Design 5: Light Purple Background (Your Favorite)</div>
+            <div class="header-demo design-5">
+                <div class="app-header">
+                    <div class="header-title-row">
+                        <h1 class="header-title">Pomodoro Timer & Task Tracker</h1>
+                        <div class="feedback-icon">
+                            <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="share-row">
+                        <div class="share-label-group">
+                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                            </svg>
+                            <span class="share-text">SHARE</span>
+                        </div>
+
+                        <div class="share-buttons">
+                            <div class="share-btn email">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 20 20">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                </svg>
+                            </div>
+
+                            <div class="share-btn twitter">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                            </div>
+
+                            <div class="share-btn facebook">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                </svg>
+                            </div>
+
+                            <div class="share-btn reddit">
+                                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                                    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-bar">
+                    <div class="analytics-content">
+                        <div class="stat-item">
+                            <span class="stat-value">1,247</span>
+                            <span class="stat-label">visits</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">89</span>
+                            <span class="stat-label">tasks completed</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">156</span>
+                            <span class="stat-label">pomodoros</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- SECTION 3: TASK PRIORITY - DESIGN 10 VARIATIONS -->
+    <div class="mockup-container">
+        <h2 class="section-title">3. Task Priority - Design 10 Variations</h2>
+        <p class="section-subtitle">Using Design 10 (Tag-Style) from mockups-task-priority.html with two selector options: Slider (from Design 20) or Grid Selector (revised from Design 9 with correct priorities: 1,3,5,6,7,9). Shows exact current UI: accordion, red trash cans, drag handles.</p>
+
+        <!-- Variation A: With Slider -->
+        <div class="mockup-card">
+            <div class="mockup-label">Variation A: Tag-Style with Slider Selector</div>
+            <div class="tasks-container">
+                <div class="task-item">
+                    <div class="task-header">
+                        <span class="drag-handle">⋮⋮</span>
+                        <span class="accordion-toggle expanded">▸</span>
+                        <div class="task-checkbox"></div>
+                        <div class="task-title-text">Implement user authentication</div>
+                        <div class="priority-slider-container">
+                            <div class="priority-slider-bar">
+                                <div class="priority-slider-thumb" style="left: 90%;">9</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subtask-list">
+                        <div class="subtask-item">
+                            <span class="subtask-drag-handle">⋮⋮</span>
+                            <div class="subtask-checkbox"></div>
+                            <div class="subtask-title">Set up auth library</div>
+                            <span class="trash-icon">🗑️</span>
+                        </div>
+                        <div class="subtask-item">
+                            <span class="subtask-drag-handle">⋮⋮</span>
+                            <div class="subtask-checkbox"></div>
+                            <div class="subtask-title">Design login UI</div>
+                            <span class="trash-icon">🗑️</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-header">
+                        <span class="drag-handle">⋮⋮</span>
+                        <span class="accordion-toggle expanded">▸</span>
+                        <div class="task-checkbox"></div>
+                        <div class="task-title-text">Refactor database queries</div>
+                        <div class="priority-slider-container">
+                            <div class="priority-slider-bar">
+                                <div class="priority-slider-thumb" style="left: 55%;">5</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subtask-list">
+                        <div class="subtask-item">
+                            <span class="subtask-drag-handle">⋮⋮</span>
+                            <div class="subtask-checkbox"></div>
+                            <div class="subtask-title">Profile slow queries</div>
+                            <span class="trash-icon">🗑️</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-header">
+                        <span class="drag-handle">⋮⋮</span>
+                        <span class="accordion-toggle">▸</span>
+                        <div class="task-checkbox"></div>
+                        <div class="task-title-text">Update documentation (collapsed)</div>
+                        <div class="priority-slider-container">
+                            <div class="priority-slider-bar">
+                                <div class="priority-slider-thumb" style="left: 10%;">1</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; text-align: center; font-size: 14px; opacity: 0.9;">
+                Drag the circle left/right to change priority (1-9)
+            </div>
+        </div>
+
+        <!-- Variation B: With Grid Selector (Correct Priorities) -->
+        <div class="mockup-card">
+            <div class="mockup-label">Variation B: Tag-Style with 3×3 Grid Selector (Valid Priorities Only)</div>
+            <div class="tasks-container">
+                <div class="task-item">
+                    <div class="task-header">
+                        <span class="drag-handle">⋮⋮</span>
+                        <span class="accordion-toggle expanded">▸</span>
+                        <div class="task-checkbox"></div>
+                        <div class="task-title-text">Implement user authentication</div>
+                        <div class="priority-grid-selector">
+                            <div class="priority-tag priority-9">9</div>
+                            <div class="priority-popup" style="display: block;">
+                                <div class="priority-popup-title">Select Priority</div>
+                                <div class="grid-3x3">
+                                    <div class="priority-option" style="background: linear-gradient(135deg, #10B981, #059669);">9</div>
+                                    <div class="priority-option" style="background: linear-gradient(135deg, #059669, #047857);">—</div>
+                                    <div class="priority-option" style="background: linear-gradient(135deg, #84CC16, #65A30D);">7</div>
+                                    <div class="priority-option" style="background: linear-gradient(135deg, #65A30D, #4D7C0F);">6</div>
+                                    <div class="priority-option" style="background: linear-gradient(135deg, #F59E0B, #D97706);">5</div>
+                                    <div class="priority-option" style="background: linear-gradient(135deg, #D97706, #B45309);">—</div>
+                                    <div class="priority-option" style="background: linear-gradient(135deg, #FBBF24, #F59E0B);">3</div>
+                                    <div class="priority-option" style="background: linear-gradient(135deg, #F97316, #EA580C);">—</div>
+                                    <div class="priority-option" style="background: linear-gradient(135deg, #EF4444, #DC2626);">1</div>
+                                </div>
+                                <div style="margin-top: 10px; font-size: 11px; color: #999; text-align: center;">
+                                    Valid priorities: 1, 3, 5, 6, 7, 9
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subtask-list">
+                        <div class="subtask-item">
+                            <span class="subtask-drag-handle">⋮⋮</span>
+                            <div class="subtask-checkbox"></div>
+                            <div class="subtask-title">Set up auth library</div>
+                            <span class="trash-icon">🗑️</span>
+                        </div>
+                        <div class="subtask-item">
+                            <span class="subtask-drag-handle">⋮⋮</span>
+                            <div class="subtask-checkbox"></div>
+                            <div class="subtask-title">Design login UI</div>
+                            <span class="trash-icon">🗑️</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-header">
+                        <span class="drag-handle">⋮⋮</span>
+                        <span class="accordion-toggle expanded">▸</span>
+                        <div class="task-checkbox"></div>
+                        <div class="task-title-text">Refactor database queries</div>
+                        <div class="priority-tag priority-5">5</div>
+                    </div>
+                    <div class="subtask-list">
+                        <div class="subtask-item">
+                            <span class="subtask-drag-handle">⋮⋮</span>
+                            <div class="subtask-checkbox"></div>
+                            <div class="subtask-title">Profile slow queries</div>
+                            <span class="trash-icon">🗑️</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-header">
+                        <span class="drag-handle">⋮⋮</span>
+                        <span class="accordion-toggle">▸</span>
+                        <div class="task-checkbox"></div>
+                        <div class="task-title-text">Update documentation (collapsed)</div>
+                        <div class="priority-tag priority-1">1</div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; text-align: center; font-size: 14px; opacity: 0.9;">
+                Click priority tag → Select from 3×3 grid matching Priority Matrix<br>
+                Valid priorities only: 1, 3, 5, 6, 7, 9 (grayed slots shown with —)
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin: 80px 0 40px; font-size: 18px; font-weight: 600;">
+        ✓ All corrections applied based on your feedback<br>
+        ✓ Pomodoro circle: Clock sweep with only red color<br>
+        ✓ Header: Exact icons from Header.tsx<br>
+        ✓ Tasks: Exact current UI with accordion, red trash cans, drag handles<br>
+        ✓ Settings: "mins" will be moved left above input boxes (using design-mockups-v2.html variant 1 as reference)
+    </div>
+
+</body>
+</html>
