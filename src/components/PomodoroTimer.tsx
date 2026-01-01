@@ -11,13 +11,15 @@ interface PomodoroTimerProps {
   // Added minutes optional since in handleSkip not passing addedMinutes as an argument
   // Prevents total focus time from being incremented on skips
   onPomodoroComplete: (sessionCount: number, addedMinutes?: number) => void;
+  onRunningChange: (isRunning: boolean) => void;
 }
 
 export default function PomodoroTimer({
   focusTime,
   shortBreakTime,
   longBreakTime,
-  onPomodoroComplete
+  onPomodoroComplete,
+  onRunningChange
 }: PomodoroTimerProps) {
   // Initialize with server-safe defaults to prevent hydration mismatch
   const [isRunning, setIsRunning] = useState<boolean>(false); // Never restore running state
@@ -33,6 +35,11 @@ export default function PomodoroTimer({
     setTimeLeft(stats.timeLeft);
     setSessionCount(stats.sessionCount);
   }, [focusTime]);
+
+  // Notify parent when running state changes
+  useEffect(() => {
+    onRunningChange(isRunning);
+  }, [isRunning, onRunningChange]);
 
   // Persist timer state to localStorage whenever it changes
   useEffect(() => {

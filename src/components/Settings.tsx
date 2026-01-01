@@ -7,6 +7,7 @@ interface SettingsProps {
   onFocusTimeChange: (time: number) => void;
   onShortBreakTimeChange: (time: number) => void;
   onLongBreakTimeChange: (time: number) => void;
+  isTimerRunning: boolean;
 }
 
 export default function Settings({
@@ -15,7 +16,8 @@ export default function Settings({
   longBreakTime,
   onFocusTimeChange,
   onShortBreakTimeChange,
-  onLongBreakTimeChange
+  onLongBreakTimeChange,
+  isTimerRunning
 }: SettingsProps) {
   const [savedMessage, setSavedMessage] = useState<string>('');
 
@@ -57,7 +59,12 @@ export default function Settings({
               type="number"
               value={focusTime}
               onChange={handleFocusChange}
-              className="w-16 h-8 text-center text-sm border border-gray-300 rounded focus:border-blue-500 bg-white text-gray-800"
+              disabled={isTimerRunning}
+              className={`w-16 h-8 text-center text-sm border border-gray-300 rounded focus:border-blue-500 ${
+                isTimerRunning
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-800'
+              }`}
               min="1"
               max="60"
             />
@@ -71,7 +78,12 @@ export default function Settings({
               type="number"
               value={shortBreakTime}
               onChange={handleShortBreakChange}
-              className="w-16 h-8 text-center text-sm border border-gray-300 rounded focus:border-blue-500 bg-white text-gray-800"
+              disabled={isTimerRunning}
+              className={`w-16 h-8 text-center text-sm border border-gray-300 rounded focus:border-blue-500 ${
+                isTimerRunning
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-800'
+              }`}
               min="1"
               max="30"
             />
@@ -85,7 +97,12 @@ export default function Settings({
               type="number"
               value={longBreakTime}
               onChange={handleLongBreakChange}
-              className="w-16 h-8 text-center text-sm border border-gray-300 rounded focus:border-blue-500 bg-white text-gray-800"
+              disabled={isTimerRunning}
+              className={`w-16 h-8 text-center text-sm border border-gray-300 rounded focus:border-blue-500 ${
+                isTimerRunning
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-800'
+              }`}
               min="1"
               max="60"
             />

@@ -21,6 +21,7 @@ export default function Home() {
   const [focusTime, setFocusTime] = useState<number>(25);
   const [shortBreakTime, setShortBreakTime] = useState<number>(5);
   const [longBreakTime, setLongBreakTime] = useState<number>(30);
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 
   // Load from localStorage after hydration
   useEffect(() => {
@@ -83,6 +84,7 @@ export default function Home() {
                 shortBreakTime={shortBreakTime}
                 longBreakTime={longBreakTime}
                 onPomodoroComplete={handlePomodoroComplete}
+                onRunningChange={setIsTimerRunning}
               />
             </div>
 
@@ -96,6 +98,7 @@ export default function Home() {
                   onFocusTimeChange={setFocusTime}
                   onShortBreakTimeChange={setShortBreakTime}
                   onLongBreakTimeChange={setLongBreakTime}
+                  isTimerRunning={isTimerRunning}
                 />
               </div>
               <div className="flex-1 min-w-0">
