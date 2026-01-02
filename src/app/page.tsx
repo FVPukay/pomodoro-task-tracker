@@ -83,6 +83,7 @@ export default function Home() {
                 focusTime={focusTime}
                 shortBreakTime={shortBreakTime}
                 longBreakTime={longBreakTime}
+                completedPomodoros={completedPomodoros}
                 onPomodoroComplete={handlePomodoroComplete}
                 onRunningChange={setIsTimerRunning}
               />

@@ -7,9 +7,7 @@ interface PomodoroTimerProps {
   focusTime: number;
   shortBreakTime: number;
   longBreakTime: number;
-  // New signature: parent needs to know both updated session count and minutes added
-  // Added minutes optional since in handleSkip not passing addedMinutes as an argument
-  // Prevents total focus time from being incremented on skips
+  completedPomodoros: number;
   onPomodoroComplete: (sessionCount: number, addedMinutes?: number) => void;
   onRunningChange: (isRunning: boolean) => void;
 }
@@ -18,6 +16,7 @@ export default function PomodoroTimer({
   focusTime,
   shortBreakTime,
   longBreakTime,
+  completedPomodoros,
   onPomodoroComplete,
   onRunningChange
 }: PomodoroTimerProps) {
@@ -25,16 +24,24 @@ export default function PomodoroTimer({
   const [isRunning, setIsRunning] = useState<boolean>(false); // Never restore running state
   const [isFocusSession, setIsFocusSession] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(focusTime * 60);
-  const [sessionCount, setSessionCount] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false); // Never restore paused state
+  const [sessionStartFocusTime, setSessionStartFocusTime] = useState<number | null>(null); // Tracks initial commitment
 
   // Load from localStorage after hydration
   useEffect(() => {
     const stats = loadStats(focusTime);
     setIsFocusSession(stats.isFocusSession);
     setTimeLeft(stats.timeLeft);
-    setSessionCount(stats.sessionCount);
+    setSessionStartFocusTime(stats.sessionStartFocusTime);
   }, [focusTime]);
+
+  // Capture initial focus time when starting a NEW focus session
+  useEffect(() => {
+    if (isRunning && isFocusSession && sessionStartFocusTime === null) {
+      // Starting a new focus session - record the commitment
+      setSessionStartFocusTime(focusTime);
+    }
+  }, [isRunning, isFocusSession, sessionStartFocusTime, focusTime]);
 
   // Notify parent when running state changes
   useEffect(() => {
@@ -44,13 +51,13 @@ export default function PomodoroTimer({
   // Persist timer state to localStorage whenever it changes
   useEffect(() => {
     saveStats({
-      sessionCount,
       isRunning,
       isFocusSession,
       timeLeft,
       isPaused,
+      sessionStartFocusTime,
     });
-  }, [sessionCount, isRunning, isFocusSession, timeLeft, isPaused]);
+  }, [isRunning, isFocusSession, timeLeft, isPaused, sessionStartFocusTime]);
 
   // Update timer display when settings change (only if not running and in focus session)
   useEffect(() => {
@@ -78,17 +85,20 @@ export default function PomodoroTimer({
 
       if (isFocusSession) {
         // a focus session completed
-        const updatedCount = sessionCount + 1;
-        setSessionCount(updatedCount);
-        // Tell parent that a pomodoro completed and how many minutes to add
-        onPomodoroComplete(updatedCount, focusTime);
+        const updatedCount = completedPomodoros + 1;
+        // Tell parent that a pomodoro completed - use the INITIAL commitment, not current setting
+        const minutesToRecord = sessionStartFocusTime ?? focusTime; // Fallback to current if somehow null
+        onPomodoroComplete(updatedCount, minutesToRecord);
         setIsFocusSession(false);
+        // Clear the session start time since focus session is complete
+        setSessionStartFocusTime(null);
         // Long break only after 4th, 8th, 12th, etc. pomodoro
         setTimeLeft(updatedCount % 4 === 0 ? longBreakTime * 60 : shortBreakTime * 60);
       } else {
         // break finished -> go back to focus
         setIsFocusSession(true);
         setTimeLeft(focusTime * 60);
+        // sessionStartFocusTime remains null - will be set when new focus session starts
       }
     }
 
@@ -96,7 +106,7 @@ export default function PomodoroTimer({
       if (interval) clearInterval(interval);
     };
     // Note: include focusTime, shortBreakTime, longBreakTime so timer durations respond properly
-  }, [isRunning, timeLeft, isFocusSession, sessionCount, focusTime, shortBreakTime, longBreakTime, onPomodoroComplete]);
+  }, [isRunning, timeLeft, isFocusSession, completedPomodoros, focusTime, shortBreakTime, longBreakTime, onPomodoroComplete, sessionStartFocusTime]);
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -117,25 +127,29 @@ export default function PomodoroTimer({
     // Single responsibility: Only reset the current timer, don't change mode or stats
     setIsRunning(false);
     setIsPaused(false);
+    // Clear session start time - user is abandoning this session
+    setSessionStartFocusTime(null);
     // Reset to current mode's time (don't switch modes)
     if (isFocusSession) {
       setTimeLeft(focusTime * 60);
     } else {
-      // Determine which break type based on session count
+      // Determine which break type based on completed pomodoros
       // Long break only after 4th, 8th, 12th, etc. pomodoro
-      const breakTime = (sessionCount > 0 && sessionCount % 4 === 0) ? longBreakTime : shortBreakTime;
+      const breakTime = (completedPomodoros > 0 && completedPomodoros % 4 === 0) ? longBreakTime : shortBreakTime;
       setTimeLeft(breakTime * 60);
     }
-    // Don't reset sessionCount, don't call onPomodoroComplete
+    // Don't call onPomodoroComplete
   };
 
   const handleSkip = () => {
     // Single responsibility: Only switch mode, preserve running state
+    // Clear session start time - user is abandoning current session
+    setSessionStartFocusTime(null);
     if (isFocusSession) {
       // Switch to break
       setIsFocusSession(false);
       // Long break only after 4th, 8th, 12th, etc. pomodoro
-      const breakTime = (sessionCount > 0 && sessionCount % 4 === 0) ? longBreakTime : shortBreakTime;
+      const breakTime = (completedPomodoros > 0 && completedPomodoros % 4 === 0) ? longBreakTime : shortBreakTime;
       setTimeLeft(breakTime * 60);
     } else {
       // Switch to focus

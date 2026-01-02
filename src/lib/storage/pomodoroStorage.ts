@@ -7,11 +7,11 @@ export interface PomodoroSettings {
 }
 
 export interface PomodoroStats {
-  sessionCount: number;
   isRunning: boolean;
   isFocusSession: boolean;
   timeLeft: number;
   isPaused: boolean;
+  sessionStartFocusTime: number | null; // Tracks focus time when session started
 }
 
 export interface CompletedStats {
@@ -32,11 +32,11 @@ const DEFAULT_SETTINGS: PomodoroSettings = {
 };
 
 const DEFAULT_STATS: PomodoroStats = {
-  sessionCount: 0,
   isRunning: false,
   isFocusSession: true,
   timeLeft: 25 * 60, // Will be updated based on settings
   isPaused: false,
+  sessionStartFocusTime: null,
 };
 
 const DEFAULT_COMPLETED: CompletedStats = {
@@ -95,11 +95,11 @@ export const loadStats = (focusTime: number): PomodoroStats => {
 
     const parsed = JSON.parse(data);
     return {
-      sessionCount: parsed.sessionCount ?? DEFAULT_STATS.sessionCount,
       isRunning: false, // Never restore running state
       isFocusSession: parsed.isFocusSession ?? DEFAULT_STATS.isFocusSession,
       timeLeft: parsed.timeLeft ?? focusTime * 60,
       isPaused: false, // Never restore paused state
+      sessionStartFocusTime: parsed.sessionStartFocusTime ?? null,
     };
   } catch (error) {
     console.error('Failed to load pomodoro stats:', error);
