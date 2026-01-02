@@ -62,6 +62,11 @@ export default function Home() {
     }
   };
 
+  const handleResetCompleted = () => {
+    setCompletedPomodoros(0);
+    setTotalFocusMinutes(0);
+  };
+
   return (
     <div
       className="min-h-screen"
@@ -106,6 +111,7 @@ export default function Home() {
                 <Completed
                   completedPomodoros={completedPomodoros}
                   totalFocusMinutes={totalFocusMinutes}
+                  onReset={handleResetCompleted}
                 />
               </div>
             </div>
