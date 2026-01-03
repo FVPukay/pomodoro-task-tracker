@@ -139,10 +139,6 @@ export default function Settings({
             />
           </div>
         </div>
-
-        <div className="text-center -mt-1">
-          <span className="text-xs text-slate-500">Time in mins</span>
-        </div>
       </div>
 
       {savedMessage && (
