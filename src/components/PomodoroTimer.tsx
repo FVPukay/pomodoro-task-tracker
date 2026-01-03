@@ -27,6 +27,44 @@ export default function PomodoroTimer({
   const [isPaused, setIsPaused] = useState<boolean>(false); // Never restore paused state
   const [sessionStartFocusTime, setSessionStartFocusTime] = useState<number | null>(null); // Tracks initial commitment
 
+  // Play completion sound using Web Audio API - Triple Ascending Chime
+  const playCompletionSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+      // Three ascending tones for uplifting, positive feeling
+      const tones = [
+        { freq: 600, delay: 0 },
+        { freq: 800, delay: 0.15 },
+        { freq: 1000, delay: 0.3 }
+      ];
+
+      tones.forEach((tone) => {
+        setTimeout(() => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.value = tone.freq;
+          oscillator.type = 'sine';
+
+          // Smooth envelope for chime-like sound
+          const now = audioContext.currentTime;
+          gainNode.gain.setValueAtTime(0, now);
+          gainNode.gain.linearRampToValueAtTime(0.25, now + 0.01);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+          oscillator.start(now);
+          oscillator.stop(now + 0.3);
+        }, tone.delay * 1000);
+      });
+    } catch (error) {
+      console.error('Failed to play completion sound:', error);
+    }
+  };
+
   // Load from localStorage after hydration
   useEffect(() => {
     const stats = loadStats(focusTime);
@@ -94,6 +132,7 @@ export default function PomodoroTimer({
 
       if (isFocusSession) {
         // a focus session completed
+        playCompletionSound(); // Play notification sound
         const updatedCount = completedPomodoros + 1;
         // Tell parent that a pomodoro completed - use the INITIAL commitment, not current setting
         const minutesToRecord = sessionStartFocusTime ?? focusTime; // Fallback to current if somehow null
