@@ -67,6 +67,12 @@ export default function Home() {
     setTotalFocusMinutes(0);
   };
 
+  const handleResetSettings = () => {
+    setFocusTime(25);
+    setShortBreakTime(5);
+    setLongBreakTime(30);
+  };
+
   return (
     <div
       className="min-h-screen"
@@ -105,6 +111,7 @@ export default function Home() {
                   onShortBreakTimeChange={setShortBreakTime}
                   onLongBreakTimeChange={setLongBreakTime}
                   isTimerRunning={isTimerRunning}
+                  onReset={handleResetSettings}
                 />
               </div>
               <div className="flex-1 min-w-0">

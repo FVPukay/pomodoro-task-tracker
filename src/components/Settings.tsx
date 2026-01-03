@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 
 interface SettingsProps {
@@ -8,6 +10,7 @@ interface SettingsProps {
   onShortBreakTimeChange: (time: number) => void;
   onLongBreakTimeChange: (time: number) => void;
   isTimerRunning: boolean;
+  onReset: () => void;
 }
 
 export default function Settings({
@@ -17,13 +20,28 @@ export default function Settings({
   onFocusTimeChange,
   onShortBreakTimeChange,
   onLongBreakTimeChange,
-  isTimerRunning
+  isTimerRunning,
+  onReset
 }: SettingsProps) {
   const [savedMessage, setSavedMessage] = useState<string>('');
+  const [showDialog, setShowDialog] = useState(false);
 
   const showSavedMessage = (message: string) => {
     setSavedMessage(message);
     setTimeout(() => setSavedMessage(''), 2000);
+  };
+
+  const handleResetClick = () => {
+    setShowDialog(true);
+  };
+
+  const handleConfirmReset = () => {
+    onReset();
+    setShowDialog(false);
+  };
+
+  const handleCancelReset = () => {
+    setShowDialog(false);
   };
 
   const handleFocusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,11 +63,24 @@ export default function Settings({
   };
 
   return (
-    <div className="w-full h-64 bg-white rounded-lg shadow-sm border border-gray-200 p-4 min-w-0 overflow-hidden flex flex-col">
-      
-      <h2 className="text-lg font-semibold m-0 text-gray-800 flex items-center justify-between mb-4">Settings
-        <span className="text-xs text-slate-500 ml-2 mr-4">mins</span>
-      </h2>
+    <>
+      <div className="w-full h-64 bg-white rounded-lg shadow-sm border border-gray-200 p-4 min-w-0 overflow-hidden flex flex-col">
+
+        <div className="flex justify-between items-center gap-2 mb-4">
+          <h2 className="text-lg font-semibold text-gray-800">Settings</h2>
+          <button
+            onClick={handleResetClick}
+            disabled={isTimerRunning}
+            className={`text-xs font-medium px-2.5 py-1 rounded shadow-sm flex-shrink-0 transition-all ${
+              isTimerRunning
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'text-white bg-red-500 hover:bg-red-700 hover:shadow-md'
+            }`}
+            aria-label="Reset settings to defaults"
+          >
+            Reset
+          </button>
+        </div>
 
       <div className="space-y-4">
         <div className="flex justify-between items-center">
@@ -108,6 +139,10 @@ export default function Settings({
             />
           </div>
         </div>
+
+        <div className="text-center -mt-1">
+          <span className="text-xs text-slate-500">Time in mins</span>
+        </div>
       </div>
 
       {savedMessage && (
@@ -118,5 +153,39 @@ export default function Settings({
         </div>
       )}
     </div>
+
+    {/* Transparent Dialog Overlay */}
+    {showDialog && (
+      <div
+        className="fixed inset-0 flex items-center justify-center z-50"
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
+        onClick={handleCancelReset}
+      >
+        <div
+          className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Reset Settings to Defaults?</h3>
+          <p className="text-gray-600 mb-6">
+            This will reset all settings to their default values (Focus: 25 mins, Short Break: 5 mins, Long Break: 30 mins). This action cannot be undone.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={handleCancelReset}
+              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmReset}
+              className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   );
 }
