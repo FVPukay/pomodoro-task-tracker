@@ -30,7 +30,8 @@ export default function PomodoroTimer({
   // Play completion sound using Web Audio API - Triple Ascending Chime
   const playCompletionSound = () => {
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioContext = new AudioContextClass();
 
       // Three ascending tones for uplifting, positive feeling
       const tones = [
@@ -208,17 +209,88 @@ export default function PomodoroTimer({
     // Don't call onPomodoroComplete - this is a manual skip, not a completion
   };
 
+  // Calculate progress for outer progress bar
+  const getTotalTime = () => {
+    if (isFocusSession) {
+      return focusTime * 60;
+    } else {
+      return (completedPomodoros > 0 && completedPomodoros % 4 === 0)
+        ? longBreakTime * 60
+        : shortBreakTime * 60;
+    }
+  };
+
+  const totalTime = getTotalTime();
+  // Only show progress during focus sessions
+  const progress = isFocusSession && totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
+
+  // SVG circle calculations - using viewBox coordinate system
+  const centerX = 160;
+  const centerY = 160;
+  const progressRadius = 144; // Radius for progress ring
+  const strokeWidth = 16;
+  const circumference = 2 * Math.PI * progressRadius;
+  // Only extend progress to close gap when at 100% (timeLeft === 0)
+  const extendedProgress = timeLeft === 0 && progress >= 99 ? 101.5 : progress;
+  const strokeDashoffset = circumference * (1 - extendedProgress / 100);
+  const blackCircleRadius = progressRadius - (strokeWidth / 2); // Black circle sits inside the progress ring
+
   return (
     <div className="w-full h-full bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center p-6 min-w-0 overflow-hidden">
       <div className="w-full h-full flex items-center justify-center">
-        
-        {/* REVISED: Added aspect-square and removed all h-XX classes */}
-        <div className="w-48 sm:w-72 
-             md:w-80 
-             lg:w-96 
-             aspect-square /* FORCES height to equal width, preventing elongation */
-             bg-black rounded-full flex flex-col items-center justify-center relative shadow-lg">
-          
+
+        {/* Timer with integrated progress bar */}
+        <div className="relative w-48 sm:w-72 md:w-80 lg:w-96 aspect-square">
+          {/* SVG for progress ring and black circle */}
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 320 320">
+            <defs>
+              {/* Option 8 gradient: Red → Crimson → Purple */}
+              <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#EF4444" />
+                <stop offset="50%" stopColor="#DC2626" />
+                <stop offset="100%" stopColor="#7C3AED" />
+              </linearGradient>
+            </defs>
+
+            {/* Black circle background */}
+            <circle
+              cx={centerX}
+              cy={centerY}
+              r={blackCircleRadius}
+              fill="black"
+              className="shadow-lg"
+            />
+
+            {/* Progress background ring - always visible */}
+            <circle
+              cx={centerX}
+              cy={centerY}
+              r={progressRadius}
+              fill="none"
+              stroke="#374151"
+              strokeWidth={strokeWidth}
+              transform={`rotate(-89 ${centerX} ${centerY})`}
+            />
+
+            {/* Progress bar with Option 8 gradient */}
+            <circle
+              cx={centerX}
+              cy={centerY}
+              r={progressRadius}
+              fill="none"
+              stroke="url(#progressGradient)"
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              transform={`rotate(-89 ${centerX} ${centerY})`}
+              style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+            />
+          </svg>
+
+          {/* Timer content overlaid on top */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+
           <div className="absolute" style={{ top: '22%' }}>
             <span className="text-white text-base sm:text-lg md:text-xl lg:text-2xl font-medium">
                 {isFocusSession ? 'Focus' : 'Break'}
@@ -229,7 +301,7 @@ export default function PomodoroTimer({
             <span className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-mono font-bold">{formatTime(timeLeft)}</span>
           </div>
 
-          <div className="absolute flex items-center space-x-3 sm:space-x-4" style={{ bottom: '14%' }}>
+          <div className="absolute flex items-center space-x-3 sm:space-x-4" style={{ bottom: '18%' }}>
             
             {/* ... Buttons (no changes needed here as they use w/h classes directly) ... */}
             <button
@@ -272,6 +344,7 @@ export default function PomodoroTimer({
             </button>
           </div>
 
+          </div>
         </div>
       </div>
     </div>
