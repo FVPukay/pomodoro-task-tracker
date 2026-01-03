@@ -59,12 +59,21 @@ export default function PomodoroTimer({
     });
   }, [isRunning, isFocusSession, timeLeft, isPaused, sessionStartFocusTime]);
 
-  // Update timer display when settings change (only if not running and in focus session)
+  // Update timer display when settings change (only if timer is fully stopped, not paused)
   useEffect(() => {
-    if (!isRunning && isFocusSession) {
-      if (!isPaused) setTimeLeft(focusTime * 60);
+    // Only sync when timer is fully stopped (not running AND not paused)
+    if (!isRunning && !isPaused) {
+      if (isFocusSession) {
+        setTimeLeft(focusTime * 60);
+      } else {
+        // Determine which break type based on completed pomodoros
+        const breakTime = (completedPomodoros > 0 && completedPomodoros % 4 === 0)
+          ? longBreakTime
+          : shortBreakTime;
+        setTimeLeft(breakTime * 60);
+      }
     }
-  }, [focusTime, isRunning, isFocusSession, isPaused]);
+  }, [focusTime, shortBreakTime, longBreakTime, isRunning, isPaused, isFocusSession, completedPomodoros]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined = undefined;
