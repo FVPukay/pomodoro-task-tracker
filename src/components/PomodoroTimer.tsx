@@ -291,42 +291,107 @@ export default function PomodoroTimer({
           {/* Timer content overlaid on top */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
 
-          <div className="absolute" style={{ top: '22%' }}>
+          <div className="absolute" style={{ top: '18%' }}>
             <span className="text-white text-base sm:text-lg md:text-xl lg:text-2xl font-medium">
                 {isFocusSession ? 'Focus' : 'Break'}
             </span>
           </div>
 
-          <div className="absolute" style={{ top: '38%' }}>
+          <div className="absolute" style={{ top: '32%' }}>
             <span className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-mono font-bold">{formatTime(timeLeft)}</span>
           </div>
 
-          <div className="absolute flex items-center space-x-3 sm:space-x-4" style={{ bottom: '18%' }}>
-            
-            {/* ... Buttons (no changes needed here as they use w/h classes directly) ... */}
+          {/* Pomodoro Circles */}
+          <div className="absolute flex gap-1 sm:gap-1.5 md:gap-2" style={{ top: '54%' }}>
+            {[0, 1, 2, 3].map((index) => {
+              const pomodoroInSet = completedPomodoros % 4;
+              const isCompleted = index < pomodoroInSet;
+              const isActive = index === pomodoroInSet && isFocusSession;
+
+              // Calculate progress percentage for active circle
+              const circleProgress = isActive && totalTime > 0
+                ? ((totalTime - timeLeft) / totalTime) * 100
+                : 0;
+
+              // Calculate clip-path for sweep effect (starts at top, goes clockwise)
+              const getClipPath = (progress: number) => {
+                if (progress <= 0) return 'polygon(50% 50%, 50% 0%, 50% 0%)';
+                if (progress >= 100) return 'polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%)';
+
+                const angle = (progress / 100) * 360;
+
+                if (angle <= 90) {
+                  // First quadrant: top to right
+                  const x = 50 + (50 * Math.tan((angle * Math.PI) / 180));
+                  return `polygon(50% 50%, 50% 0%, ${x}% 0%)`;
+                } else if (angle <= 180) {
+                  // Second quadrant: right to bottom
+                  const y = 50 + (50 * Math.tan(((angle - 90) * Math.PI) / 180));
+                  return `polygon(50% 50%, 50% 0%, 100% 0%, 100% ${y}%)`;
+                } else if (angle <= 270) {
+                  // Third quadrant: bottom to left
+                  const x = 50 - (50 * Math.tan(((angle - 180) * Math.PI) / 180));
+                  return `polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, ${x}% 100%)`;
+                } else {
+                  // Fourth quadrant: left to top
+                  const y = 50 - (50 * Math.tan(((angle - 270) * Math.PI) / 180));
+                  return `polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% ${y}%)`;
+                }
+              };
+
+              return (
+                <div
+                  key={index}
+                  className="relative w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full overflow-hidden"
+                  style={{
+                    background: 'black',
+                    border: isCompleted ? 'none' : '1.5px solid #EF4444'
+                  }}
+                >
+                  {/* Red fill for completed circles or swept area for in-progress */}
+                  {(isCompleted || isActive) && (
+                    <div
+                      className="absolute"
+                      style={{
+                        inset: '-2px',
+                        background: '#EF4444',
+                        clipPath: isCompleted ? 'none' : getClipPath(circleProgress),
+                        transition: isActive ? 'clip-path 0.5s linear' : 'none',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="absolute flex items-center space-x-2 sm:space-x-3 md:space-x-4" style={{ bottom: '16%' }}>
+
+            {/* Buttons - responsive sizing */}
             <button
               onClick={handleReset}
-              className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full flex items-center justify-center border-2 border-purple-400 hover:border-purple-300 transition-all"
+              className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center border-2 border-purple-400 hover:border-purple-300 transition-all"
               style={{ background: 'linear-gradient(to right, #2dd4bf, #a855f7)' }}
               aria-label="Reset timer"
             >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
 
             <button
               onClick={handleStartPause}
-              className="w-12 h-12 sm:w-14 sm:h-14 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center border-2 border-purple-400 hover:border-purple-300 transition-all hover:scale-105"
+              className="w-10 h-10 sm:w-13 sm:h-13 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center border-2 border-purple-400 hover:border-purple-300 transition-all hover:scale-105"
               style={{ background: 'linear-gradient(to right, #2dd4bf, #a855f7)' }}
               aria-label={isRunning ? 'Pause timer' : 'Start timer'}
             >
               {isRunning ? (
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-8 lg:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5.5 sm:h-5.5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-8 lg:h-8 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5.5 sm:h-5.5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               )}
@@ -334,11 +399,11 @@ export default function PomodoroTimer({
 
             <button
               onClick={handleSkip}
-              className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full flex items-center justify-center border-2 border-purple-400 hover:border-purple-300 transition-all"
+              className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center border-2 border-purple-400 hover:border-purple-300 transition-all"
               style={{ background: 'linear-gradient(to right, #2dd4bf, #a855f7)' }}
               aria-label="Skip session"
             >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
