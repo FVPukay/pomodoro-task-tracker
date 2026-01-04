@@ -304,7 +304,10 @@ export default function PomodoroTimer({
           {/* Pomodoro Circles */}
           <div className="absolute flex gap-1 sm:gap-1.5 md:gap-2" style={{ top: '54%' }}>
             {[0, 1, 2, 3].map((index) => {
-              const pomodoroInSet = completedPomodoros % 4;
+              // Show all 4 circles as completed during long break, reset at start of next focus session
+              const pomodoroInSet = (completedPomodoros % 4 === 0 && !isFocusSession)
+                ? 4
+                : completedPomodoros % 4;
               const isCompleted = index < pomodoroInSet;
               const isActive = index === pomodoroInSet && isFocusSession;
 
