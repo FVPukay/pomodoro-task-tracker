@@ -210,9 +210,12 @@ export default function PomodoroTimer({
   };
 
   // Calculate progress for outer progress bar
+  // Use sessionStartFocusTime (committed time) when available to prevent
+  // progress bars from jumping when settings change mid-session
   const getTotalTime = () => {
     if (isFocusSession) {
-      return focusTime * 60;
+      // Use committed time if session is in progress, otherwise use current setting
+      return (sessionStartFocusTime ?? focusTime) * 60;
     } else {
       return (completedPomodoros > 0 && completedPomodoros % 4 === 0)
         ? longBreakTime * 60
@@ -305,7 +308,8 @@ export default function PomodoroTimer({
           <div className="absolute flex gap-1 sm:gap-1.5 md:gap-2" style={{ top: '54%' }}>
             {[0, 1, 2, 3].map((index) => {
               // Show all 4 circles as completed during long break, reset at start of next focus session
-              const pomodoroInSet = (completedPomodoros % 4 === 0 && !isFocusSession)
+              // Only show all 4 if we've actually completed at least one pomodoro (not when completedPomodoros=0)
+              const pomodoroInSet = (completedPomodoros % 4 === 0 && completedPomodoros > 0 && !isFocusSession)
                 ? 4
                 : completedPomodoros % 4;
               const isCompleted = index < pomodoroInSet;
