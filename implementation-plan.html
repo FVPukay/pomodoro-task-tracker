@@ -178,6 +178,7 @@
         <div class="page-header">
             <h1>🍅 Pomodoro Timer & Task Tracker</h1>
             <p>Complete Implementation Plan - Step-by-Step Development Roadmap</p>
+            <p style="font-size: 16px; margin-top: 15px; opacity: 0.85;">📁 Design assets and mockups are located in the <code>design_docs/</code> folder and project root.</p>
         </div>
 
         <!-- Testing Strategy -->
@@ -198,33 +199,27 @@
         <div class="step-container">
             <div class="step-header">
                 <div class="step-number">1</div>
-                <div class="step-title">Core Timer Functionality & Storage</div>
+                <div class="step-title">Core Timer Functionality & Storage ✅</div>
             </div>
             <div class="step-content">
-                <div class="section-title">Includes:</div>
+                <div class="section-title">Implementation Complete (11 Todos):</div>
                 <ul class="item-list">
-                    <li>Pomodoro timer with progress bar (<span class="highlight">Option 5: Purple → Pink gradient</span>)</li>
-                    <li>Timer progress starts from <span class="highlight">top</span>, moves <span class="highlight">clockwise</span></li>
-                    <li>Pomodoro circles with clock sweep (black for unfilled parts, fit inside timer)</li>
-                    <li>Keep existing buttons: Play/Pause, Reset, Next</li>
-                    <li>Settings lock when timer running (mins centered above inputs)</li>
-                    <li>Reset button: <span class="highlight">only resets time & pauses</span> (NOT completed stats)</li>
-                    <li><strong>localStorage optimization</strong> - Split into separate keys:
-                        <ul style="margin-top: 8px; margin-left: 20px;">
-                            <li style="padding: 4px 0;">• <code>pomodoro-settings</code></li>
-                            <li style="padding: 4px 0;">• <code>pomodoro-stats</code></li>
-                            <li style="padding: 4px 0;">• <code>pomodoro-completed</code></li>
-                            <li style="padding: 4px 0;">• <code>pomodoro-tasks</code> (existing)</li>
-                        </ul>
-                    </li>
-                    <li>Completed section display</li>
-                    <li><strong>Completed section reset button with confirmation dialog</strong> (Option A)</li>
-                    <li><strong>Sound on pomodoro completion</strong></li>
+                    <li>✅ Fix button behaviors and break timing (Reset, Skip, long break after 4 pomodoros)</li>
+                    <li>✅ Implement localStorage split (settings, stats, completed)</li>
+                    <li>✅ Settings lock when timer running (disable inputs only)</li>
+                    <li>✅ Add reset button to Completed section with dialog</li>
+                    <li>✅ Add reset button to Settings section with dialog</li>
+                    <li>✅ Fix timer display sync when settings change</li>
+                    <li>✅ Add sound on pomodoro completion</li>
+                    <li>✅ Remove 'Time in mins' and reposition saved messages for better UI</li>
+                    <li>✅ Add outer progress bar with Option 8 gradient (clockwise from top)</li>
+                    <li>✅ Add inner pomodoro circles with clock sweep animation</li>
+                    <li>✅ Fix pomodoro circles to persist through long break and reset at start of next focus session</li>
                 </ul>
 
-                <div class="note-box">
-                    <div class="note-title">📝 Deliverable:</div>
-                    Add tests + manual testing by you before proceeding to Step 2
+                <div class="note-box" style="background: rgba(16, 185, 129, 0.15); border-left: 4px solid #10B981;">
+                    <div class="note-title" style="color: #D1FAE5;">✅ Status:</div>
+                    <strong>Implementation complete.</strong> Tests deferred to Step 6 (Testing & Bug Fixes). Some basic tests exist for progress bar and circle display bugs, but comprehensive coverage will be added in Step 6.
                 </div>
             </div>
         </div>
@@ -323,33 +318,6 @@
         <div class="step-container">
             <div class="step-header">
                 <div class="step-number">5</div>
-                <div class="step-title">Bug Fixes</div>
-            </div>
-            <div class="step-content">
-                <div class="section-title">Includes:</div>
-                <ul class="item-list">
-                    <li><strong>Browser refresh flicker</strong> - Investigate and fix hydration/localStorage loading issues</li>
-                    <li>Any bugs discovered during Steps 1-4</li>
-                    <li>Performance optimization if needed</li>
-                    <li>Edge case handling</li>
-                </ul>
-
-                <div class="note-box">
-                    <div class="note-title">⚠️ Flexible Approach:</div>
-                    If a bug is clearly related to current work in Steps 1-4, will ask you before proceeding. Otherwise, bugs are batched and addressed in this step.
-                </div>
-
-                <div class="note-box">
-                    <div class="note-title">📝 Deliverable:</div>
-                    Testing & verification by you before proceeding to Step 6
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 6 -->
-        <div class="step-container">
-            <div class="step-header">
-                <div class="step-number">6</div>
                 <div class="step-title">Final Styling & Polish</div>
             </div>
             <div class="step-content">
@@ -377,7 +345,48 @@
 
                 <div class="note-box">
                     <div class="note-title">📝 Deliverable:</div>
-                    Manual testing by you across multiple devices/browsers before proceeding to Step 7
+                    Manual testing by you across multiple devices/browsers before proceeding to Step 6
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">6</div>
+                <div class="step-title">Testing & Bug Fixes</div>
+            </div>
+            <div class="step-content">
+                <div class="section-title">Phase 1: Add Comprehensive Tests for Step 1 (FIRST)</div>
+                <ul class="item-list">
+                    <li><strong>pomodoroStorage.ts tests</strong> - All CRUD operations for the 3 localStorage buckets</li>
+                    <li><strong>PomodoroTimer.tsx tests</strong> - Button behaviors (Reset, Skip), long break logic, timer sync</li>
+                    <li><strong>Settings.tsx tests</strong> - Input disable when timer running, reset dialog</li>
+                    <li><strong>Completed.tsx tests</strong> - Reset dialog, stats display</li>
+                    <li>Target: 85%+ test coverage for Step 1 features</li>
+                </ul>
+
+                <div class="section-title" style="margin-top: 30px;">Phase 2: Address Outstanding Bugs (AFTER tests)</div>
+                <ul class="item-list">
+                    <li><strong>Browser refresh flicker</strong> - Investigate and fix hydration/localStorage loading issues</li>
+                    <li>Any bugs discovered during Steps 1-5</li>
+                    <li>Performance optimization if needed</li>
+                    <li>Edge case handling</li>
+                </ul>
+
+                <div class="note-box">
+                    <div class="note-title">⚠️ Important Order:</div>
+                    <strong>Tests FIRST, bugs SECOND.</strong> This ensures we have regression protection before fixing bugs, and can verify fixes with tests.
+                </div>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Note on TDD:</div>
+                    Step 1 did NOT follow TDD (implementation came first). This step retrofits comprehensive tests for those features. All future steps (2-4, 7) should follow proper TDD workflow.
+                </div>
+
+                <div class="note-box">
+                    <div class="note-title">📝 Deliverable:</div>
+                    All tests passing with 85%+ coverage + all bugs fixed + manual verification by you before proceeding to Step 7
                 </div>
             </div>
         </div>
@@ -502,8 +511,8 @@
                     <li style="padding: 4px 0;"><strong>Step 2 second:</strong> Tasks are independent and can be tested in isolation. Priority system builds on localStorage from Step 1.</li>
                     <li style="padding: 4px 0;"><strong>Step 3 third:</strong> Analytics UI displays stats from features built in Steps 1-2. No point showing analytics for features that don't exist yet.</li>
                     <li style="padding: 4px 0;"><strong>Step 4 fourth:</strong> Banner references completed stats (Step 1) and can track interactions via PostHog later (Step 7).</li>
-                    <li style="padding: 4px 0;"><strong>Step 5 fifth:</strong> Fix bugs before styling to avoid styling breaking changes.</li>
-                    <li style="padding: 4px 0;"><strong>Step 6 sixth:</strong> Polish styling when all functionality is locked in - prevents rework from functional changes.</li>
+                    <li style="padding: 4px 0;"><strong>Step 5 fifth:</strong> Polish styling when all functionality is locked in - prevents rework from functional changes.</li>
+                    <li style="padding: 4px 0;"><strong>Step 6 sixth:</strong> Add tests for Step 1 (which didn't follow TDD) THEN fix bugs. Tests provide regression protection and verify bug fixes work correctly.</li>
                     <li style="padding: 4px 0;"><strong>Step 7 seventh:</strong> PostHog integration after styling ensures analytics reflect actual user behavior on the polished, final app.</li>
                     <li style="padding: 4px 0;"><strong>Step 8 last:</strong> Deploy only after everything is complete, tested, and tracking properly.</li>
                 </ul>
@@ -513,14 +522,15 @@
                     <li style="padding: 4px 0;">✓ localStorage optimization before tasks need it</li>
                     <li style="padding: 4px 0;">✓ Core features before analytics UI</li>
                     <li style="padding: 4px 0;">✓ All functionality before styling</li>
-                    <li style="padding: 4px 0;">✓ Styling before analytics integration</li>
+                    <li style="padding: 4px 0;">✓ Styling before testing/bug fixes (so tests reflect final UI)</li>
+                    <li style="padding: 4px 0;">✓ Testing/bug fixes before analytics integration</li>
                     <li style="padding: 4px 0;">✓ Everything complete before deployment</li>
                 </ul>
             </div>
         </div>
 
         <div style="text-align: center; margin-top: 60px; font-size: 18px; font-weight: 600; opacity: 0.9;">
-            Ready to proceed with Step 1 when you are! 🚀
+            ✅ Step 1 Complete | Ready for Step 2 when indicated! 🚀
         </div>
     </div>
 </body>

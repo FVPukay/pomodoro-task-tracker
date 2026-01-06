@@ -8,26 +8,33 @@ A Pomodoro timer and task tracker built with Next.js 15, React 19, TypeScript, a
 
 **Location**: `/Users/frederickpukay/GitHub/public/pomodoro-timer-and-task-tracker`
 
+**Design Assets**: The `design_docs/` folder contains design mockups and UI specifications that may be referenced during feature implementation. The human may provide additional clarifications or iterate on the implementation plan as needed.
+
 ---
 
-## Current Task
+## Project Status
 
-**Add tests for completed features** - The timer logic is complex and needs test coverage for the features implemented in recent commits.
+**✅ Step 1 Complete**: Core Timer Functionality & Storage (implementation done, tests deferred to Step 6)
 
-### Features That Need Tests
+**➡️ Current Step**: Ready to begin Step 2 (Tasks/Subtasks with Priority) when indicated
 
-| Feature | Component/File | Priority |
-|---------|---------------|----------|
-| Button behaviors (Reset, Skip) | `PomodoroTimer.tsx` | High |
-| Long break after 4 pomodoros | `PomodoroTimer.tsx` | High |
-| localStorage split (settings, stats, completed) | `pomodoroStorage.ts` | High |
-| Settings lock when timer running | `Settings.tsx` | Medium |
-| Reset dialogs (Completed, Settings) | `Completed.tsx`, `Settings.tsx` | Medium |
-| Timer display sync on settings change | `PomodoroTimer.tsx` | Medium |
-| Sound on pomodoro completion | `PomodoroTimer.tsx` | Low |
-| Progress bar gradient (outer ring) | `PomodoroTimer.tsx` | Low |
-| Pomodoro circles with sweep animation | `PomodoroTimer.tsx` | Low |
-| Circles persist through long break | `PomodoroTimer.tsx` | Medium |
+### Step 1 Todos (Implemented - Tests Deferred to Step 6)
+
+The following features were implemented in Step 1 but did not follow TDD. Tests will be added in **Step 6: Testing & Bug Fixes**:
+
+1. ✅ Fix button behaviors and break timing (Reset, Skip, long break after 4 pomodoros)
+2. ✅ Implement localStorage split (settings, stats, completed)
+3. ✅ Settings lock when timer running (disable inputs only)
+4. ✅ Add reset button to Completed section with dialog
+5. ✅ Add reset button to Settings section with dialog
+6. ✅ Fix timer display sync when settings change
+7. ✅ Add sound on pomodoro completion
+8. ✅ Remove 'Time in mins' and reposition saved messages for better UI
+9. ✅ Add outer progress bar with Option 8 gradient (clockwise from top)
+10. ✅ Add inner pomodoro circles with clock sweep animation
+11. ✅ Fix pomodoro circles to persist through long break and reset at start of next focus session
+
+**Note**: Some basic tests exist for bugs #1 (progress bar during paused session) and #2 (circle display logic), but comprehensive test coverage will be added in Step 6.
 
 ---
 
@@ -278,9 +285,9 @@ src/components/__tests__/
 
 ---
 
-## After Tests: Remaining Implementation Steps
+## Remaining Implementation Steps
 
-Once testing for Step 1 is complete, here are the remaining steps from `implementation-plan.html`. I'll provide more specific guidance when we reach each step.
+See `implementation-plan.html` for detailed requirements. The human will provide more specific guidance when we reach each step.
 
 ### Step 2: Tasks/Subtasks with Priority
 - Add priority slider (valid values: 1, 2, 3, 4, 6, 9)
@@ -304,18 +311,20 @@ Once testing for Step 1 is complete, here are the remaining steps from `implemen
 - Two options: "Fresh Start" (reset stats) or "Keep Stats"
 - Banner with ☀️ emoji and gradient styling
 
-### Step 5: Bug Fixes
-- Browser refresh flicker investigation
-- Any bugs discovered in Steps 1-4
-- Performance optimization
-- Edge case handling
-
-### Step 6: Final Styling & Polish
+### Step 5: Final Styling & Polish
 - Comprehensive styling consistency pass
 - Color, typography, spacing consistency
 - Responsive behavior across all breakpoints
 - Cross-browser testing
 - Accessibility improvements (ARIA, keyboard nav, focus states)
+
+### Step 6: Testing & Bug Fixes
+- **FIRST**: Add comprehensive tests for Step 1 features (the 11 todos listed above)
+- **THEN**: Address outstanding bugs:
+  - Browser refresh flicker investigation
+  - Any bugs discovered in Steps 1-5
+  - Performance optimization
+  - Edge case handling
 
 ### Step 7: PostHog Integration
 - Install and configure PostHog SDK
@@ -356,13 +365,15 @@ When building new features or fixing bugs, follow this TDD workflow:
 
 **When to apply TDD:**
 - New features (Steps 2-4, 7)
-- Bug fixes (Step 5)
+- Bug fixes (Step 6)
 - Any logic that can be meaningfully tested
 
 **When TDD may not apply:**
-- Pure styling changes (Step 6)
+- Pure styling changes (Step 5)
 - Configuration/deployment (Step 8)
 - Visual elements that are hard to test programmatically
+
+**Note**: Step 1 did NOT follow TDD (implementation came first). Tests for Step 1 features will be added retroactively in Step 6.
 
 ---
 
@@ -382,5 +393,6 @@ When building new features or fixing bugs, follow this TDD workflow:
 | Resource | Location |
 |----------|----------|
 | Implementation plan (detailed) | `implementation-plan.html` |
-| Design mockups | Various HTML files in project root |
+| Design mockups | Various HTML files in project root, `design_docs/` folder |
 | Commit history | `git log --oneline` for context on recent changes |
+| Project status | This file (CLAUDE.md) - "Project Status" section |
