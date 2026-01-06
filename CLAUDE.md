@@ -343,7 +343,21 @@ See `implementation-plan.html` for detailed requirements. The human will provide
 
 ## Development Approach: Test-Driven Development (TDD)
 
-When building new features or fixing bugs, follow this TDD workflow:
+### Core Principle: Small, Atomic Tasks
+
+**CRITICAL**: Each step is broken down into **small, manageable tasks**. Each task is for **ONE thing only**:
+- ✅ One feature (e.g., "Add priority slider to task card")
+- ✅ One bug fix (e.g., "Fix timer sync when settings change while paused")
+- ❌ NOT multiple features in one task
+- ❌ NOT mixing features and bug fixes
+
+**Why?** This follows [Addy Osmani's LLM coding workflow recommendations](https://addyo.substack.com/p/my-llm-coding-workflow-going-into): smaller tasks = better LLM performance, easier debugging, clearer commits.
+
+**Who breaks down the tasks?** The human will provide task breakdown and clarification as needed. The implementation plan hints at potential tasks, but expect further guidance during each step.
+
+### TDD Workflow (Applied to Each Small Task)
+
+When building each small task, follow this TDD workflow:
 
 ```
 1. WRITE TESTS FIRST (RED)
@@ -355,7 +369,7 @@ When building new features or fixing bugs, follow this TDD workflow:
 4. I (HUMAN) MANUALLY TEST
 ```
 
-**For each feature or bug fix:**
+**For each small task:**
 1. **Write failing tests first** - Define what the code should do before writing it
 2. **Run tests** - Confirm they fail (RED phase)
 3. **Write implementation code** - Make the tests pass (GREEN phase)
@@ -364,8 +378,8 @@ When building new features or fixing bugs, follow this TDD workflow:
 6. **I will manually test** - Verify in browser before moving on
 
 **When to apply TDD:**
-- New features (Steps 2-4, 7)
-- Bug fixes (Step 6)
+- New features (Steps 2-4, 7) - each small feature task gets its own TDD cycle
+- Bug fixes (Step 6) - each bug fix gets its own TDD cycle
 - Any logic that can be meaningfully tested
 
 **When TDD may not apply:**
@@ -377,14 +391,31 @@ When building new features or fixing bugs, follow this TDD workflow:
 
 ---
 
-## How to Proceed After Each Step
+## How to Proceed After Each Task
 
+**Remember**: We work in **small, atomic tasks** - one feature OR one bug fix at a time.
+
+**For each small task:**
 1. **Write tests first** (when applicable) - Tests should fail initially
 2. **Write implementation code** - Make the tests pass
 3. **Run all tests**: `npm test` - Ensure nothing is broken
-4. **Tell me** what you completed - I will manually test in browser
-5. **Commit**: `git add . && git commit -m "descriptive message"`
-6. **I'll provide guidance** for the next step
+4. **Report completion** - Tell the human what you completed and wait for confirmation
+5. **Human manually tests** - The human will test in browser and indicate task completion
+6. **Human commits** - Only the human makes git commits (NOT Claude Code)
+7. **Next task** - Human provides the next task or confirms when to move to the next step
+
+**⚠️ IMPORTANT**: After generating new code for features or bug fixes, **ONLY the human indicates when a task is completed**. Do not assume completion or move on to the next task without explicit confirmation.
+
+---
+
+## Git Workflow
+
+**⚠️ CRITICAL: Claude Code does NOT make commits.**
+
+- **ONLY the human makes git commits**
+- Claude Code writes/edits code, runs tests, but never commits
+- After each task is complete and manually tested, the human will commit
+- This ensures the human maintains full control over the git history and commit messages
 
 ---
 

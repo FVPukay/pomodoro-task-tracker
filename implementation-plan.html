@@ -181,18 +181,44 @@
             <p style="font-size: 16px; margin-top: 15px; opacity: 0.85;">📁 Design assets and mockups are located in the <code>design_docs/</code> folder and project root.</p>
         </div>
 
+        <!-- Working Methodology -->
+        <div class="rationale-box" style="margin-bottom: 40px; background: rgba(59, 130, 246, 0.15); border-left: 4px solid #3B82F6;">
+            <div class="rationale-title">⚙️ Working Methodology: Small, Atomic Tasks</div>
+            <div style="margin-top: 20px; line-height: 1.8;">
+                <p><strong>CRITICAL APPROACH:</strong> Each step below will be broken down into <strong>small, manageable tasks</strong>. Each task is for <strong>ONE thing only</strong>:</p>
+                <ul style="margin-top: 15px; margin-left: 20px; line-height: 2;">
+                    <li style="padding: 4px 0;">✅ <strong>One feature</strong> per task (e.g., "Add priority slider to task card")</li>
+                    <li style="padding: 4px 0;">✅ <strong>One bug fix</strong> per task (e.g., "Fix timer sync when paused")</li>
+                    <li style="padding: 4px 0;">❌ <strong>NOT</strong> multiple features in one task</li>
+                    <li style="padding: 4px 0;">❌ <strong>NOT</strong> mixing features and bug fixes</li>
+                </ul>
+                <p style="margin-top: 20px;"><strong>Why?</strong> This follows <a href="https://addyo.substack.com/p/my-llm-coding-workflow-going-into" style="color: #60A5FA; text-decoration: underline;">Addy Osmani's LLM coding workflow</a>: smaller tasks = better LLM performance, easier debugging, clearer commits.</p>
+                <p style="margin-top: 15px;"><strong>Task Breakdown:</strong> The steps below hint at potential tasks, but the human will provide specific task breakdown and clarification as we work through each step.</p>
+            </div>
+        </div>
+
         <!-- Testing Strategy -->
         <div class="rationale-box" style="margin-bottom: 40px;">
-            <div class="rationale-title">🧪 Testing Strategy</div>
+            <div class="rationale-title">🧪 Testing Strategy (TDD Per Task)</div>
             <div style="margin-top: 20px; line-height: 1.8;">
-                <p><strong>Tests will be added at every step where it makes sense to ensure what we create does exactly what it's supposed to do.</strong></p>
+                <p><strong>TDD applies to each small task</strong> (not just entire steps). For each task:</p>
                 <ul style="margin-top: 15px; margin-left: 20px; line-height: 2;">
-                    <li style="padding: 4px 0;">Each step includes appropriate tests for the features being implemented</li>
-                    <li style="padding: 4px 0;">Manual testing by you after each step before proceeding to the next</li>
-                    <li style="padding: 4px 0;">PostHog integration (Step 7) will include explicit testing to verify tracking works correctly</li>
-                    <li style="padding: 4px 0;">Final smoke testing on live site after deployment (Step 8)</li>
+                    <li style="padding: 4px 0;">Write failing tests FIRST (RED phase)</li>
+                    <li style="padding: 4px 0;">Write implementation code to pass tests (GREEN phase)</li>
+                    <li style="padding: 4px 0;">Refactor if needed</li>
+                    <li style="padding: 4px 0;">Manual testing by human after each task</li>
+                    <li style="padding: 4px 0;">Human commits after each completed task (NOT Claude Code)</li>
                 </ul>
+                <p style="margin-top: 15px;"><strong>Exception:</strong> Step 1 did NOT follow TDD. Tests will be added retroactively in Step 6.</p>
             </div>
+        </div>
+
+        <!-- Git Workflow -->
+        <div class="note-box" style="margin-bottom: 40px; background: rgba(239, 68, 68, 0.15); border-left: 4px solid #EF4444;">
+            <div class="note-title" style="color: #FEE2E2;">⚠️ CRITICAL: Git Commits & Task Completion</div>
+            <p style="margin-top: 10px;"><strong>Claude Code does NOT make git commits.</strong></p>
+            <p style="margin-top: 10px;">Only the human makes commits. Claude Code writes/edits code and runs tests, but never commits. After each task is complete and manually tested, the human will commit. This ensures full control over git history and commit messages.</p>
+            <p style="margin-top: 15px;"><strong>After generating new code for features or bug fixes, ONLY the human indicates when a task is completed.</strong> Claude Code reports what was done and waits for human confirmation before moving to the next task.</p>
         </div>
 
         <!-- Step 1 -->
