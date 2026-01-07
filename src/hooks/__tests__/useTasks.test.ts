@@ -104,6 +104,49 @@ describe('useTasks', () => {
         expect(parsed.tasks).toHaveLength(1);
       });
     });
+
+    it('should create task with specified priority', () => {
+      const { result } = renderHook(() => useTasks());
+
+      act(() => {
+        result.current.addTask('High priority task', 9);
+      });
+
+      expect(result.current.tasks).toHaveLength(1);
+      expect(result.current.tasks[0].priority).toBe(9);
+    });
+
+    it('should create task with medium priority when not specified', () => {
+      const { result } = renderHook(() => useTasks());
+
+      act(() => {
+        result.current.addTask('Default priority task');
+      });
+
+      expect(result.current.tasks).toHaveLength(1);
+      expect(result.current.tasks[0].priority).toBe(2);
+    });
+
+    it('should create tasks with different priorities', () => {
+      const { result } = renderHook(() => useTasks());
+
+      act(() => {
+        result.current.addTask('High Impact Low Time', 9);
+        result.current.addTask('High Impact Medium Time', 6);
+        result.current.addTask('High Impact High Time', 4);
+        result.current.addTask('Medium Impact Low Time', 3);
+        result.current.addTask('Medium Impact Medium Time', 2);
+        result.current.addTask('Low Impact Low Time', 1);
+      });
+
+      expect(result.current.tasks).toHaveLength(6);
+      expect(result.current.tasks[0].priority).toBe(9);
+      expect(result.current.tasks[1].priority).toBe(6);
+      expect(result.current.tasks[2].priority).toBe(4);
+      expect(result.current.tasks[3].priority).toBe(3);
+      expect(result.current.tasks[4].priority).toBe(2);
+      expect(result.current.tasks[5].priority).toBe(1);
+    });
   });
 
   describe('deleteTask', () => {

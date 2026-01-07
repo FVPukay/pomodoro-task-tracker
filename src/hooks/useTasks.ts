@@ -28,7 +28,7 @@ export function useTasks() {
   /**
    * Add a new task
    */
-  const addTask = useCallback((title: string) => {
+  const addTask = useCallback((title: string, priority: number = 2) => {
     if (!title.trim()) return;
 
     setTasks(prev => {
@@ -40,7 +40,7 @@ export function useTasks() {
         subtasks: [],
         createdAt: Date.now(),
         order: prev.length,
-        priority: 2  // Default: Medium Impact • Medium Time (will be customizable in Task 2)
+        priority
       };
 
       return [...prev, newTask];

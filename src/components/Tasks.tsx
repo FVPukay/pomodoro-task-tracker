@@ -6,6 +6,9 @@ import React, { useState } from 'react';
 import { useTasks } from '@/hooks/useTasks';
 import TaskItem from './TaskItem';
 
+// Priority values mapping: position -> priority
+const PRIORITY_VALUES = [1, 2, 3, 4, 6, 9];
+
 export default function Tasks() {
   const {
     tasks,
@@ -23,14 +26,34 @@ export default function Tasks() {
   } = useTasks();
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [selectedPriority, setSelectedPriority] = useState(2);
   const [draggedTaskIndex, setDraggedTaskIndex] = useState<number | null>(null);
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTaskTitle.trim()) {
-      addTask(newTaskTitle);
+      addTask(newTaskTitle, selectedPriority);
       setNewTaskTitle('');
+      setSelectedPriority(2); // Reset to default
     }
+  };
+
+  // Get slider position (0-100) from priority value
+  const getSliderPosition = (priority: number): number => {
+    const index = PRIORITY_VALUES.indexOf(priority);
+    return (index / (PRIORITY_VALUES.length - 1)) * 100;
+  };
+
+  // Get priority value from slider position (0-100)
+  const getPriorityFromPosition = (position: number): number => {
+    const index = Math.round((position / 100) * (PRIORITY_VALUES.length - 1));
+    return PRIORITY_VALUES[Math.max(0, Math.min(index, PRIORITY_VALUES.length - 1))];
+  };
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const position = parseInt(e.target.value);
+    const priority = getPriorityFromPosition(position);
+    setSelectedPriority(priority);
   };
 
   // Task drag handlers
@@ -65,20 +88,47 @@ export default function Tasks() {
 
       {/* Add Task Form */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <form onSubmit={handleAddTask} className="flex gap-2">
-          <input
-            type="text"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            placeholder="Add a new task..."
-            className="flex-1 px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-gray-500"
-          />
-          <button
-            type="submit"
-            className="px-6 py-2 font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
-          >
-            Add
-          </button>
+        <form onSubmit={handleAddTask} className="space-y-3">
+          {/* Input and Button Row */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newTaskTitle}
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+              placeholder="Add a new task..."
+              className="flex-1 px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-gray-500"
+            />
+            <button
+              type="submit"
+              className="px-6 py-2 font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
+            >
+              Add
+            </button>
+          </div>
+
+          {/* Priority Slider */}
+          <div className="space-y-2">
+            <div className="flex items-center text-sm">
+              <span className="text-gray-700 font-medium">Priority: {selectedPriority}</span>
+            </div>
+            <div className="relative">
+              <div className="h-2 bg-gradient-to-r from-red-500 via-yellow-500 via-lime-400 to-green-500 rounded-full"></div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={getSliderPosition(selectedPriority)}
+                onChange={handleSliderChange}
+                className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer"
+              />
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md border-2 border-black flex items-center justify-center text-xs font-bold text-black pointer-events-none"
+                style={{ left: `calc(${getSliderPosition(selectedPriority)}% - 12px)` }}
+              >
+                {selectedPriority}
+              </div>
+            </div>
+          </div>
         </form>
       </div>
 
