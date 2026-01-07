@@ -268,7 +268,67 @@
                     <li>localStorage integration with task priorities</li>
                 </ul>
 
-                <div class="note-box">
+                <div class="section-title" style="margin-top: 30px;">Atomic Task Breakdown:</div>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <p style="margin-bottom: 15px; line-height: 1.6;"><strong>Task 1: Add Priority Field to Task Data Model</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8;">
+                        <li style="padding: 4px 0;">Add <code>priority: number</code> to Task interface in <code>types/task.ts</code></li>
+                        <li style="padding: 4px 0;">Verify localStorage handles it automatically (no changes needed to storage adapter)</li>
+                        <li style="padding: 4px 0;">Write test for save/load with priority field</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <p style="margin-bottom: 15px; line-height: 1.6;"><strong>Task 2: Add Priority Selection to Task Creation Flow</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8;">
+                        <li style="padding: 4px 0;">Add priority slider to add task form in <code>Tasks.tsx</code> (below title input, above Add button)</li>
+                        <li style="padding: 4px 0;">Valid slider positions: <span class="highlight">1, 2, 3, 4, 6, 9</span> (default: 2)</li>
+                        <li style="padding: 4px 0;">Track <code>selectedPriority</code> in local state</li>
+                        <li style="padding: 4px 0;">Update <code>addTask</code> in <code>useTasks.ts</code> to accept priority parameter</li>
+                        <li style="padding: 4px 0;">Reset slider to 2 after task creation</li>
+                        <li style="padding: 4px 0;">Test that <code>addTask</code> creates tasks with correct priority value</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <p style="margin-bottom: 15px; line-height: 1.6;"><strong>Task 3: Add Priority Badge Display to Tasks</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8;">
+                        <li style="padding: 4px 0;">Create <code>getPriorityLabel(priority: number)</code> helper function with mappings:
+                            <ul style="margin-top: 8px; margin-left: 20px;">
+                                <li style="padding: 4px 0;">• 9 → "High Impact • Low Time"</li>
+                                <li style="padding: 4px 0;">• 6 → "High Impact • Medium Time"</li>
+                                <li style="padding: 4px 0;">• 4 → "High Impact • High Time"</li>
+                                <li style="padding: 4px 0;">• 3 → "Medium Impact • Low Time"</li>
+                                <li style="padding: 4px 0;">• 2 → "Medium Impact • Medium Time"</li>
+                                <li style="padding: 4px 0;">• 1 → "Low Impact • Low Time"</li>
+                            </ul>
+                        </li>
+                        <li style="padding: 4px 0;">Add priority badge to <code>TaskItem.tsx</code> header (top-right area)</li>
+                        <li style="padding: 4px 0;">Apply Design 10 gradient styling from <code>mockups-task-priority-final.html</code></li>
+                        <li style="padding: 4px 0;">Test <code>getPriorityLabel</code> function returns correct labels for all valid priority values</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <p style="margin-bottom: 15px; line-height: 1.6;"><strong>Task 4: Add Priority Editing to Expanded Tasks</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8;">
+                        <li style="padding: 4px 0;">Add priority slider to <code>TaskItem.tsx</code> expanded section (above subtasks list)</li>
+                        <li style="padding: 4px 0;">Add <code>updateTaskPriority(taskId, priority)</code> function to <code>useTasks.ts</code></li>
+                        <li style="padding: 4px 0;">Wire slider onChange to call <code>updateTaskPriority</code></li>
+                        <li style="padding: 4px 0;">Badge updates in real-time when slider changes</li>
+                        <li style="padding: 4px 0;">Test <code>updateTaskPriority</code> function updates priority correctly</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <p style="margin-bottom: 15px; line-height: 1.6;"><strong>Task 5: Make New Tasks Start Expanded</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8;">
+                        <li style="padding: 4px 0;">Update <code>addTask</code> in <code>useTasks.ts</code> to set <code>expanded: true</code> for new tasks</li>
+                        <li style="padding: 4px 0;">Test that newly created tasks have <code>expanded: true</code> by default</li>
+                    </ul>
+                </div>
+
+                <div class="note-box" style="margin-top: 25px;">
                     <div class="note-title">📝 Deliverable:</div>
                     Add tests + manual testing by you before proceeding to Step 3
                 </div>
