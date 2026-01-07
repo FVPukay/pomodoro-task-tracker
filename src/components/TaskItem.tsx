@@ -13,6 +13,7 @@ interface TaskItemProps {
   onToggleExpanded: (taskId: string) => void;
   onDelete: (taskId: string) => void;
   onUpdateTitle: (taskId: string, title: string) => void;
+  onUpdatePriority: (taskId: string, priority: number) => void;
   onAddSubtask: (taskId: string, title: string) => void;
   onDeleteSubtask: (taskId: string, subtaskId: string) => void;
   onToggleSubtaskComplete: (taskId: string, subtaskId: string) => void;
@@ -23,6 +24,9 @@ interface TaskItemProps {
   onDrop: (e: React.DragEvent, index: number) => void;
 }
 
+// Priority values mapping: position -> priority
+const PRIORITY_VALUES = [1, 2, 3, 4, 6, 9];
+
 export default function TaskItem({
   task,
   index,
@@ -30,6 +34,7 @@ export default function TaskItem({
   onToggleExpanded,
   onDelete,
   onUpdateTitle,
+  onUpdatePriority,
   onAddSubtask,
   onDeleteSubtask,
   onToggleSubtaskComplete,
@@ -73,6 +78,24 @@ export default function TaskItem({
 
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const totalSubtasks = task.subtasks.length;
+
+  // Get slider position (0-100) from priority value
+  const getSliderPosition = (priority: number): number => {
+    const index = PRIORITY_VALUES.indexOf(priority);
+    return (index / (PRIORITY_VALUES.length - 1)) * 100;
+  };
+
+  // Get priority value from slider position (0-100)
+  const getPriorityFromPosition = (position: number): number => {
+    const index = Math.round((position / 100) * (PRIORITY_VALUES.length - 1));
+    return PRIORITY_VALUES[Math.max(0, Math.min(index, PRIORITY_VALUES.length - 1))];
+  };
+
+  const handlePriorityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const position = parseInt(e.target.value);
+    const priority = getPriorityFromPosition(position);
+    onUpdatePriority(task.id, priority);
+  };
 
   // Get priority badge color based on priority value
   const getPriorityColor = (priority: number): string => {
@@ -240,6 +263,30 @@ export default function TaskItem({
         {/* Subtasks Section */}
         {task.expanded && (
           <div className="mt-4 ml-8 space-y-2">
+            {/* Priority Slider */}
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center text-sm">
+                <span className="text-gray-700 font-medium">Priority: {task.priority}</span>
+              </div>
+              <div className="relative">
+                <div className="h-2 bg-gradient-to-r from-red-500 via-yellow-500 via-lime-400 to-green-500 rounded-full"></div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={getSliderPosition(task.priority)}
+                  onChange={handlePriorityChange}
+                  className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer"
+                />
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md border-2 border-black flex items-center justify-center text-xs font-bold text-black pointer-events-none"
+                  style={{ left: `calc(${getSliderPosition(task.priority)}% - 12px)` }}
+                >
+                  {task.priority}
+                </div>
+              </div>
+            </div>
+
             {/* Subtasks List */}
             {task.subtasks.map((subtask, idx) => (
               <SubtaskItem

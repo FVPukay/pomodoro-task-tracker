@@ -15,6 +15,7 @@ export default function Tasks() {
     addTask,
     deleteTask,
     updateTaskTitle,
+    updateTaskPriority,
     toggleTaskComplete,
     toggleTaskExpanded,
     reorderTasks,
@@ -162,6 +163,7 @@ export default function Tasks() {
                 onToggleExpanded={toggleTaskExpanded}
                 onDelete={deleteTask}
                 onUpdateTitle={updateTaskTitle}
+                onUpdatePriority={updateTaskPriority}
                 onAddSubtask={addSubtask}
                 onDeleteSubtask={deleteSubtask}
                 onToggleSubtaskComplete={toggleSubtaskComplete}

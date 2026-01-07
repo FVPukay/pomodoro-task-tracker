@@ -106,6 +106,17 @@ export function useTasks() {
   }, []);
 
   /**
+   * Update a task's priority
+   */
+  const updateTaskPriority = useCallback((taskId: string, priority: number) => {
+    setTasks(prev =>
+      prev.map(task =>
+        task.id === taskId ? { ...task, priority } : task
+      )
+    );
+  }, []);
+
+  /**
    * Reorder tasks via drag and drop
    */
   const reorderTasks = useCallback((sourceIndex: number, destIndex: number) => {
@@ -270,6 +281,7 @@ export function useTasks() {
     addTask,
     deleteTask,
     updateTaskTitle,
+    updateTaskPriority,
     toggleTaskComplete,
     toggleTaskExpanded,
     reorderTasks,

@@ -235,6 +235,79 @@ describe('useTasks', () => {
     });
   });
 
+  describe('updateTaskPriority', () => {
+    it('should update task priority', () => {
+      const { result } = renderHook(() => useTasks());
+
+      act(() => {
+        result.current.addTask('Test Task', 2);
+      });
+
+      const taskId = result.current.tasks[0].id;
+
+      act(() => {
+        result.current.updateTaskPriority(taskId, 9);
+      });
+
+      expect(result.current.tasks[0].priority).toBe(9);
+    });
+
+    it('should update priority for correct task', () => {
+      const { result } = renderHook(() => useTasks());
+
+      act(() => {
+        result.current.addTask('Task 1', 2);
+        result.current.addTask('Task 2', 3);
+        result.current.addTask('Task 3', 4);
+      });
+
+      const task2Id = result.current.tasks[1].id;
+
+      act(() => {
+        result.current.updateTaskPriority(task2Id, 9);
+      });
+
+      expect(result.current.tasks[0].priority).toBe(2);
+      expect(result.current.tasks[1].priority).toBe(9);
+      expect(result.current.tasks[2].priority).toBe(4);
+    });
+
+    it('should handle all valid priority values', () => {
+      const { result } = renderHook(() => useTasks());
+      const priorities = [1, 2, 3, 4, 6, 9];
+
+      act(() => {
+        result.current.addTask('Test Task', 2);
+      });
+
+      const taskId = result.current.tasks[0].id;
+
+      priorities.forEach(priority => {
+        act(() => {
+          result.current.updateTaskPriority(taskId, priority);
+        });
+
+        expect(result.current.tasks[0].priority).toBe(priority);
+      });
+    });
+
+    it('should not throw error when updating non-existent task', () => {
+      const { result } = renderHook(() => useTasks());
+
+      act(() => {
+        result.current.addTask('Task 1', 2);
+      });
+
+      expect(() => {
+        act(() => {
+          result.current.updateTaskPriority('non-existent-id', 9);
+        });
+      }).not.toThrow();
+
+      expect(result.current.tasks[0].priority).toBe(2);
+    });
+  });
+
   describe('toggleTaskComplete', () => {
     it('should toggle task completed state', () => {
       const { result } = renderHook(() => useTasks());
