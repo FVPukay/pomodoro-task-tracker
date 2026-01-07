@@ -74,6 +74,25 @@ export default function TaskItem({
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const totalSubtasks = task.subtasks.length;
 
+  // Get priority badge color based on priority value
+  const getPriorityColor = (priority: number): string => {
+    switch (priority) {
+      case 9:
+        return 'bg-green-700'; // dark green
+      case 6:
+        return 'bg-green-400'; // light green
+      case 4:
+      case 3:
+        return 'bg-yellow-400'; // yellow
+      case 2:
+        return 'bg-orange-500'; // orange
+      case 1:
+        return 'bg-red-500'; // red
+      default:
+        return 'bg-gray-500'; // fallback
+    }
+  };
+
   // Subtask drag handlers
   const handleSubtaskDragStart = (e: React.DragEvent, index: number) => {
     e.stopPropagation();
@@ -169,6 +188,11 @@ export default function TaskItem({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
+            {/* Priority Badge */}
+            <span className={`px-2 py-1 text-xs font-bold text-white rounded-full ${getPriorityColor(task.priority)}`}>
+              {task.priority}
+            </span>
+
             {/* Expand/Collapse Button - Always visible */}
             <button
               onClick={() => onToggleExpanded(task.id)}
