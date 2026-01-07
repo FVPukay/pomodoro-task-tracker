@@ -221,7 +221,8 @@ describe('LocalStorageAdapter', () => {
             }
           ],
           createdAt: Date.now(),
-          order: 0
+          order: 0,
+          priority: 9
         },
         {
           id: '2',
@@ -230,7 +231,8 @@ describe('LocalStorageAdapter', () => {
           expanded: true,
           subtasks: [],
           createdAt: Date.now(),
-          order: 1
+          order: 1,
+          priority: 2
         }
       ];
 
@@ -244,6 +246,53 @@ describe('LocalStorageAdapter', () => {
       expect(loadedTasks).toEqual(tasks);
       expect(loadedTasks.length).toBe(2);
       expect(loadedTasks[0].subtasks.length).toBe(1);
+    });
+
+    it('should handle save and load with priority field', () => {
+      const tasks: Task[] = [
+        {
+          id: '1',
+          title: 'High priority task',
+          completed: false,
+          expanded: false,
+          subtasks: [],
+          createdAt: Date.now(),
+          order: 0,
+          priority: 9
+        },
+        {
+          id: '2',
+          title: 'Medium priority task',
+          completed: false,
+          expanded: false,
+          subtasks: [],
+          createdAt: Date.now(),
+          order: 1,
+          priority: 2
+        },
+        {
+          id: '3',
+          title: 'Low priority task',
+          completed: false,
+          expanded: false,
+          subtasks: [],
+          createdAt: Date.now(),
+          order: 2,
+          priority: 1
+        }
+      ];
+
+      // Save tasks with priority
+      adapter.save(tasks);
+
+      // Load tasks
+      const loadedTasks = adapter.load();
+
+      // Verify priorities are preserved
+      expect(loadedTasks).toEqual(tasks);
+      expect(loadedTasks[0].priority).toBe(9);
+      expect(loadedTasks[1].priority).toBe(2);
+      expect(loadedTasks[2].priority).toBe(1);
     });
 
     it('should handle clear and load cycle correctly', () => {

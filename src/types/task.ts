@@ -16,6 +16,7 @@ export interface Task {
   subtasks: Subtask[];
   createdAt: number;             // timestamp
   order: number;                 // for drag-and-drop ordering
+  priority: number;              // 1, 2, 3, 4, 6, 9 (Eisenhower-style priority)
 }
 
 export interface TaskState {

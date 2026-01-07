@@ -39,7 +39,8 @@ export function useTasks() {
         expanded: false,
         subtasks: [],
         createdAt: Date.now(),
-        order: prev.length
+        order: prev.length,
+        priority: 2  // Default: Medium Impact • Medium Time (will be customizable in Task 2)
       };
 
       return [...prev, newTask];
