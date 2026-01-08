@@ -174,10 +174,7 @@ export default function Tasks() {
     <div className="w-full h-full max-h-full bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <h2 className="text-xl font-semibold text-gray-800">Tasks</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Organize your work with tasks and subtasks
-        </p>
+        <h2 className="text-xl font-semibold text-gray-800">Tasks and Subtasks</h2>
       </div>
 
       {/* Add Task Form */}
