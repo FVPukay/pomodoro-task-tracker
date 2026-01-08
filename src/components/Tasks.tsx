@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTasks } from '@/hooks/useTasks';
 import TaskItem from './TaskItem';
 
@@ -27,34 +27,127 @@ export default function Tasks() {
   } = useTasks();
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [selectedPriority, setSelectedPriority] = useState(2);
+  const [selectedPriority, setSelectedPriority] = useState(4);
   const [draggedTaskIndex, setDraggedTaskIndex] = useState<number | null>(null);
+  const previousPriorityRef = useRef(4);
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTaskTitle.trim()) {
       addTask(newTaskTitle, selectedPriority);
       setNewTaskTitle('');
-      setSelectedPriority(2); // Reset to default
+      setSelectedPriority(4); // Reset to default
+      previousPriorityRef.current = 4;
     }
   };
 
-  // Get slider position (0-100) from priority value
-  const getSliderPosition = (priority: number): number => {
-    const index = PRIORITY_VALUES.indexOf(priority);
-    return (index / (PRIORITY_VALUES.length - 1)) * 100;
+  // Correct invalid priority values to nearest valid value
+  const correctPriorityValue = (value: number): number => {
+    // Handle out-of-range values
+    if (value < 1) return 1;
+    if (value > 9) return 9;
+
+    // If already a valid value, return it
+    if (PRIORITY_VALUES.includes(value)) return value;
+
+    // Find nearest valid value (round up on ties)
+    let nearest = PRIORITY_VALUES[0];
+    let minDiff = Math.abs(value - nearest);
+
+    for (const validValue of PRIORITY_VALUES) {
+      const diff = Math.abs(value - validValue);
+      // Prefer higher values on ties (diff === minDiff)
+      if (diff < minDiff || (diff === minDiff && validValue > nearest)) {
+        minDiff = diff;
+        nearest = validValue;
+      }
+    }
+
+    return nearest;
   };
 
-  // Get priority value from slider position (0-100)
-  const getPriorityFromPosition = (position: number): number => {
-    const index = Math.round((position / 100) * (PRIORITY_VALUES.length - 1));
-    return PRIORITY_VALUES[Math.max(0, Math.min(index, PRIORITY_VALUES.length - 1))];
+  const handlePriorityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 4;
+    const previousValue = previousPriorityRef.current;
+
+    // Determine direction: is the value increasing or decreasing?
+    const isIncreasing = value > previousValue;
+
+    let corrected: number;
+
+    // If it's a valid value, use it directly
+    if (PRIORITY_VALUES.includes(value)) {
+      corrected = value;
+    } else {
+      // Invalid value - need to find next valid value in the direction of change
+      if (isIncreasing) {
+        // Find next higher valid value
+        corrected = PRIORITY_VALUES.find(v => v > previousValue) || PRIORITY_VALUES[0];
+      } else {
+        // Find next lower valid value
+        corrected = [...PRIORITY_VALUES].reverse().find(v => v < previousValue) || PRIORITY_VALUES[PRIORITY_VALUES.length - 1];
+      }
+    }
+
+    previousPriorityRef.current = corrected;
+    setSelectedPriority(corrected);
   };
 
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const position = parseInt(e.target.value);
-    const priority = getPriorityFromPosition(position);
-    setSelectedPriority(priority);
+  const handlePriorityBlur = () => {
+    const corrected = correctPriorityValue(selectedPriority);
+    if (corrected !== selectedPriority) {
+      setSelectedPriority(corrected);
+    }
+  };
+
+  const handlePriorityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault(); // Prevent default increment/decrement behavior
+
+      const currentIndex = PRIORITY_VALUES.indexOf(selectedPriority);
+      let newIndex: number;
+
+      if (e.key === 'ArrowUp') {
+        // Move to next priority value, wrap to start if at end
+        newIndex = currentIndex === PRIORITY_VALUES.length - 1 ? 0 : currentIndex + 1;
+      } else {
+        // Move to previous priority value, wrap to end if at start
+        newIndex = currentIndex === 0 ? PRIORITY_VALUES.length - 1 : currentIndex - 1;
+      }
+
+      const newPriority = PRIORITY_VALUES[newIndex];
+      previousPriorityRef.current = newPriority;
+      setSelectedPriority(newPriority);
+    }
+  };
+
+  // Get priority background color
+  const getPriorityBgColor = (priority: number): string => {
+    switch (priority) {
+      case 9:
+        return 'bg-green-700'; // dark green
+      case 6:
+        return 'bg-green-400'; // light green
+      case 4:
+      case 3:
+        return 'bg-yellow-400'; // yellow
+      case 2:
+        return 'bg-orange-500'; // orange
+      case 1:
+        return 'bg-red-500'; // red
+      default:
+        return 'bg-gray-200'; // fallback
+    }
+  };
+
+  // Get priority text color for visibility
+  const getPriorityTextColor = (priority: number): string => {
+    // Dark backgrounds need white text
+    if ([9, 2, 1].includes(priority)) {
+      return 'text-white';
+    }
+    // Light backgrounds need black text
+    return 'text-black';
   };
 
   // Task drag handlers
@@ -89,9 +182,9 @@ export default function Tasks() {
 
       {/* Add Task Form */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <form onSubmit={handleAddTask} className="space-y-3">
+        <form onSubmit={handleAddTask}>
           {/* Input and Button Row */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <input
               type="text"
               value={newTaskTitle}
@@ -99,36 +192,23 @@ export default function Tasks() {
               placeholder="Add a new task..."
               className="flex-1 px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-gray-500"
             />
+            <input
+              type="number"
+              value={selectedPriority}
+              onChange={handlePriorityChange}
+              onBlur={handlePriorityBlur}
+              onKeyDown={handlePriorityKeyDown}
+              aria-label="Task priority"
+              className={`w-16 h-10 text-center text-sm font-bold border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 ${getPriorityBgColor(selectedPriority)} ${getPriorityTextColor(selectedPriority)}`}
+              min="1"
+              max="9"
+            />
             <button
               type="submit"
               className="px-6 py-2 font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
             >
               Add
             </button>
-          </div>
-
-          {/* Priority Slider */}
-          <div className="space-y-2">
-            <div className="flex items-center text-sm">
-              <span className="text-gray-700 font-medium">Priority: {selectedPriority}</span>
-            </div>
-            <div className="relative">
-              <div className="h-2 bg-gradient-to-r from-red-500 via-yellow-500 via-lime-400 to-green-500 rounded-full"></div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={getSliderPosition(selectedPriority)}
-                onChange={handleSliderChange}
-                className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer"
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md border-2 border-black flex items-center justify-center text-xs font-bold text-black pointer-events-none"
-                style={{ left: `calc(${getSliderPosition(selectedPriority)}% - 12px)` }}
-              >
-                {selectedPriority}
-              </div>
-            </div>
           </div>
         </form>
       </div>

@@ -436,4 +436,203 @@ describe('Tasks Component', () => {
       expect(tasks[2]).toHaveTextContent('Third');
     });
   });
+
+  describe('Priority Input', () => {
+    it('should render priority input with default value of 4', () => {
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority');
+      expect(priorityInput).toBeInTheDocument();
+      expect(priorityInput).toHaveValue(4);
+    });
+
+    it('should accept valid priority values (1, 2, 3, 4, 6, 9)', async () => {
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority') as HTMLInputElement;
+      const validValues = [1, 2, 3, 4, 6, 9];
+
+      for (const value of validValues) {
+        fireEvent.change(priorityInput, { target: { value: value.toString() } });
+        expect(priorityInput.value).toBe(value.toString());
+      }
+    });
+
+    it('should correct invalid priority values to nearest valid value', async () => {
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority') as HTMLInputElement;
+
+      // Type invalid value and blur
+      fireEvent.change(priorityInput, { target: { value: '5' } });
+      fireEvent.blur(priorityInput);
+
+      // Should correct to nearest valid value (4 or 6)
+      const correctedValue = parseInt(priorityInput.value);
+      expect([4, 6]).toContain(correctedValue);
+    });
+
+    it('should create task with selected priority', async () => {
+      const user = userEvent.setup();
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority');
+      const taskTitleInput = screen.getByPlaceholderText('Add a new task...');
+
+      // Set priority to 9
+      fireEvent.change(priorityInput, { target: { value: '9' } });
+
+      // Add task
+      await user.type(taskTitleInput, 'High Priority Task{Enter}');
+
+      // Task should be created with priority 9
+      await screen.findByText('High Priority Task');
+
+      // Check localStorage to verify priority was saved
+      await waitFor(() => {
+        const saved = localStorage.getItem('pomodoro-tasks');
+        expect(saved).not.toBeNull();
+        const parsed = JSON.parse(saved!);
+        expect(parsed.tasks[0].priority).toBe(9);
+      });
+    });
+
+    it('should reset priority input to default (4) after creating task', async () => {
+      const user = userEvent.setup();
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority') as HTMLInputElement;
+      const taskTitleInput = screen.getByPlaceholderText('Add a new task...');
+
+      // Set priority to 1
+      fireEvent.change(priorityInput, { target: { value: '1' } });
+      expect(priorityInput.value).toBe('1');
+
+      // Add task
+      await user.type(taskTitleInput, 'Test Task{Enter}');
+      await screen.findByText('Test Task');
+
+      // Priority should reset to 4
+      expect(priorityInput.value).toBe('4');
+    });
+
+    it('should handle out-of-range values', async () => {
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority') as HTMLInputElement;
+
+      // Test value too low (0)
+      fireEvent.change(priorityInput, { target: { value: '0' } });
+      fireEvent.blur(priorityInput);
+      expect(parseInt(priorityInput.value)).toBeGreaterThanOrEqual(1);
+
+      // Test value too high (10)
+      fireEvent.change(priorityInput, { target: { value: '10' } });
+      fireEvent.blur(priorityInput);
+      expect(parseInt(priorityInput.value)).toBeLessThanOrEqual(9);
+    });
+
+    it('should cycle through valid values with ArrowUp key', () => {
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority') as HTMLInputElement;
+
+      // Start at 4, press ArrowUp -> should go to 6
+      expect(priorityInput.value).toBe('4');
+      fireEvent.keyDown(priorityInput, { key: 'ArrowUp' });
+      expect(priorityInput.value).toBe('6');
+
+      // Press ArrowUp again -> should go to 9
+      fireEvent.keyDown(priorityInput, { key: 'ArrowUp' });
+      expect(priorityInput.value).toBe('9');
+
+      // Press ArrowUp again -> should wrap to 1
+      fireEvent.keyDown(priorityInput, { key: 'ArrowUp' });
+      expect(priorityInput.value).toBe('1');
+    });
+
+    it('should cycle through valid values with ArrowDown key', () => {
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority') as HTMLInputElement;
+
+      // Start at 4, press ArrowDown -> should go to 3
+      expect(priorityInput.value).toBe('4');
+      fireEvent.keyDown(priorityInput, { key: 'ArrowDown' });
+      expect(priorityInput.value).toBe('3');
+
+      // Press ArrowDown again -> should go to 2
+      fireEvent.keyDown(priorityInput, { key: 'ArrowDown' });
+      expect(priorityInput.value).toBe('2');
+
+      // Press ArrowDown again -> should go to 1
+      fireEvent.keyDown(priorityInput, { key: 'ArrowDown' });
+      expect(priorityInput.value).toBe('1');
+
+      // Press ArrowDown again -> should wrap to 9
+      fireEvent.keyDown(priorityInput, { key: 'ArrowDown' });
+      expect(priorityInput.value).toBe('9');
+    });
+
+    it('should skip invalid values when cycling with arrow keys', () => {
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority') as HTMLInputElement;
+
+      // Set to 3, press ArrowUp -> should skip to 4 (not 3.5 or invalid values)
+      fireEvent.change(priorityInput, { target: { value: '3' } });
+      fireEvent.keyDown(priorityInput, { key: 'ArrowUp' });
+      expect(priorityInput.value).toBe('4');
+
+      // From 4, press ArrowUp -> should skip to 6 (not 5)
+      fireEvent.keyDown(priorityInput, { key: 'ArrowUp' });
+      expect(priorityInput.value).toBe('6');
+    });
+
+    it('should not allow invalid values when spinner arrows are clicked', () => {
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority') as HTMLInputElement;
+
+      // Start at 4 (default)
+      expect(priorityInput.value).toBe('4');
+
+      // Scroll up from 4 to 5 -> should go to next higher valid value (6)
+      fireEvent.change(priorityInput, { target: { value: '5' } });
+      expect(priorityInput.value).toBe('6');
+
+      // Scroll up from 6 to 7 -> should go to next higher valid value (9)
+      fireEvent.change(priorityInput, { target: { value: '7' } });
+      expect(priorityInput.value).toBe('9');
+
+      // Scroll down from 9 to 8 -> should go to next lower valid value (6)
+      fireEvent.change(priorityInput, { target: { value: '8' } });
+      expect(priorityInput.value).toBe('6');
+
+      // Scroll down from 6 to 5 -> should go to next lower valid value (4)
+      fireEvent.change(priorityInput, { target: { value: '5' } });
+      expect(priorityInput.value).toBe('4');
+
+      // Scroll up from 4 to 5 -> should go to next higher valid value (6)
+      fireEvent.change(priorityInput, { target: { value: '5' } });
+      expect(priorityInput.value).toBe('6');
+    });
+
+    it('should always show valid priority values only', () => {
+      render(<Tasks />);
+
+      const priorityInput = screen.getByLabelText('Task priority') as HTMLInputElement;
+      const validPriorityValues = [1, 2, 3, 4, 6, 9];
+      const invalidValues = [5, 7, 8];
+
+      for (const invalidValue of invalidValues) {
+        fireEvent.change(priorityInput, { target: { value: invalidValue.toString() } });
+        const currentValue = parseInt(priorityInput.value);
+
+        // Value should be corrected to a valid priority
+        expect(validPriorityValues.includes(currentValue)).toBe(true);
+        expect(invalidValues.includes(currentValue)).toBe(false);
+      }
+    });
+  });
 });
