@@ -15,9 +15,9 @@ describe('Tasks Component', () => {
   });
 
   describe('Rendering', () => {
-    it('should render the component', () => {
+    it('should render the component with correct header', () => {
       render(<Tasks />);
-      expect(screen.getByText('Tasks')).toBeInTheDocument();
+      expect(screen.getByText('Tasks and Subtasks')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('Add a new task...')).toBeInTheDocument();
     });
 
