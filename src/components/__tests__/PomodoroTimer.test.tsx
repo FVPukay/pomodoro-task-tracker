@@ -275,4 +275,475 @@ describe('PomodoroTimer Component - Bug Fixes', () => {
       expect(filledCircles).toHaveLength(3);
     });
   });
+
+  describe('Behavior #1: Timer countdown mechanics', () => {
+    it('should count down from focus time when started', () => {
+      render(<PomodoroTimer {...defaultProps} focusTime={25} />);
+
+      // Start timer
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Verify initial time display (25:00)
+      expect(screen.getByText(/25:00/)).toBeInTheDocument();
+
+      // Advance 1 second
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Should now show 24:59
+      expect(screen.getByText(/24:59/)).toBeInTheDocument();
+
+      // Advance 59 more seconds (total 1 minute)
+      act(() => {
+        jest.advanceTimersByTime(59000);
+      });
+
+      // Should now show 24:00
+      expect(screen.getByText(/24:00/)).toBeInTheDocument();
+    });
+
+    it('should stop counting when paused', () => {
+      render(<PomodoroTimer {...defaultProps} focusTime={25} />);
+
+      // Start timer
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Advance 5 seconds
+      act(() => {
+        jest.advanceTimersByTime(5000);
+      });
+
+      expect(screen.getByText(/24:55/)).toBeInTheDocument();
+
+      // Pause timer
+      const pauseButton = screen.getByLabelText(/pause timer/i);
+      fireEvent.click(pauseButton);
+
+      // Advance 10 more seconds
+      act(() => {
+        jest.advanceTimersByTime(10000);
+      });
+
+      // Time should not have changed
+      expect(screen.getByText(/24:55/)).toBeInTheDocument();
+    });
+
+    it('should resume countdown from paused time', () => {
+      render(<PomodoroTimer {...defaultProps} focusTime={25} />);
+
+      // Start, advance, pause
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      act(() => {
+        jest.advanceTimersByTime(5000);
+      });
+
+      const pauseButton = screen.getByLabelText(/pause timer/i);
+      fireEvent.click(pauseButton);
+
+      expect(screen.getByText(/24:55/)).toBeInTheDocument();
+
+      // Resume
+      const resumeButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(resumeButton);
+
+      // Advance 1 second
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Should continue from 24:55 → 24:54
+      expect(screen.getByText(/24:54/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Behavior #2: Focus → Short Break → Focus transitions', () => {
+    it('should transition from focus to short break when timer completes', () => {
+      const onPomodoroComplete = jest.fn();
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={5}
+          completedPomodoros={0}
+          onPomodoroComplete={onPomodoroComplete}
+        />
+      );
+
+      // Start focus timer
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Should show "Focus" initially
+      expect(screen.getByText(/focus/i)).toBeInTheDocument();
+      expect(screen.getByText(/1:00/)).toBeInTheDocument();
+
+      // Complete focus session
+      act(() => {
+        jest.advanceTimersByTime(60000);
+      });
+
+      // Should transition to short break
+      expect(screen.getByText(/break/i)).toBeInTheDocument();
+      expect(screen.getByText(/5:00/)).toBeInTheDocument();
+      expect(onPomodoroComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it('should transition from short break to focus when timer completes', () => {
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={25}
+          shortBreakTime={1}
+          completedPomodoros={1}
+        />
+      );
+
+      // Skip to break
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      expect(screen.getByText(/break/i)).toBeInTheDocument();
+
+      // Start break timer
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Complete break
+      act(() => {
+        jest.advanceTimersByTime(60000);
+      });
+
+      // Should transition back to focus
+      expect(screen.getByText(/focus/i)).toBeInTheDocument();
+      expect(screen.getByText(/25:00/)).toBeInTheDocument();
+    });
+
+    it('should auto-start next session after completion', () => {
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={1}
+          completedPomodoros={0}
+        />
+      );
+
+      // Start focus timer
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Complete focus session
+      act(() => {
+        jest.advanceTimersByTime(60000);
+      });
+
+      // Should be in break and timer should be running
+      expect(screen.getByText(/break/i)).toBeInTheDocument();
+
+      // Advance time to verify timer is counting
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Should show 0:59 (timer counting down from 1:00)
+      expect(screen.getByText(/0:59/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Behavior #3: Long break after 4th pomodoro', () => {
+    it('should use short break after 1st pomodoro', () => {
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={3}
+          longBreakTime={10}
+          completedPomodoros={1}
+        />
+      );
+
+      // Skip to break
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      // Should show short break time (3 minutes), not long break (10 minutes)
+      expect(screen.getByText(/3:00/)).toBeInTheDocument();
+      expect(screen.getByText(/break/i)).toBeInTheDocument();
+    });
+
+    it('should use short break after 2nd pomodoro', () => {
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={3}
+          longBreakTime={10}
+          completedPomodoros={2}
+        />
+      );
+
+      // Skip to break after 2nd pomodoro
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      // Should show short break
+      expect(screen.getByText(/3:00/)).toBeInTheDocument();
+    });
+
+    it('should use short break after 3rd pomodoro', () => {
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={3}
+          longBreakTime={10}
+          completedPomodoros={3}
+        />
+      );
+
+      // Skip to break after 3rd pomodoro
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      // Should show short break
+      expect(screen.getByText(/3:00/)).toBeInTheDocument();
+    });
+
+    it('should use long break after 4th pomodoro', () => {
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={3}
+          longBreakTime={10}
+          completedPomodoros={4}
+        />
+      );
+
+      // Skip to break
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      // Should show long break time (10 minutes), not short break (3 minutes)
+      expect(screen.getByText(/10:00/)).toBeInTheDocument();
+      expect(screen.getByText(/break/i)).toBeInTheDocument();
+    });
+
+    it('should use long break after 8th pomodoro', () => {
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={3}
+          longBreakTime={10}
+          completedPomodoros={8}
+        />
+      );
+
+      // Skip to break after 8th
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      // Should show long break
+      expect(screen.getByText(/10:00/)).toBeInTheDocument();
+    });
+
+    it('should use long break after 12th pomodoro', () => {
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={3}
+          longBreakTime={10}
+          completedPomodoros={12}
+        />
+      );
+
+      // Skip to break after 12th
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      // Should show long break
+      expect(screen.getByText(/10:00/)).toBeInTheDocument();
+    });
+
+    it('should NOT use long break after 5th pomodoro', () => {
+      render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={3}
+          longBreakTime={10}
+          completedPomodoros={5}
+        />
+      );
+
+      // Skip to break
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      // Should show short break, not long break
+      expect(screen.getByText(/3:00/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Behavior #4: Button behaviors (Reset, Skip, Start/Pause)', () => {
+    describe('Reset button', () => {
+      it('should stop timer and reset to mode time', () => {
+        render(<PomodoroTimer {...defaultProps} focusTime={25} />);
+
+        // Start and advance
+        fireEvent.click(screen.getByLabelText(/start timer/i));
+        act(() => jest.advanceTimersByTime(5000));
+
+        expect(screen.getByText(/24:55/)).toBeInTheDocument();
+
+        // Reset
+        fireEvent.click(screen.getByLabelText(/reset timer/i));
+
+        // Should reset to 25:00
+        expect(screen.getByText(/25:00/)).toBeInTheDocument();
+
+        // Advance time - should NOT count down (timer stopped)
+        act(() => jest.advanceTimersByTime(5000));
+        expect(screen.getByText(/25:00/)).toBeInTheDocument();
+      });
+
+      it('should clear sessionStartFocusTime on reset', () => {
+        const { container, rerender } = render(
+          <PomodoroTimer {...defaultProps} focusTime={1} />
+        );
+
+        // Start timer (captures sessionStartFocusTime=1)
+        fireEvent.click(screen.getByLabelText(/start timer/i));
+        act(() => jest.advanceTimersByTime(5000));
+
+        // Reset
+        fireEvent.click(screen.getByLabelText(/reset timer/i));
+
+        // Change settings
+        rerender(<PomodoroTimer {...defaultProps} focusTime={10} />);
+
+        // Start again - progress should use new focusTime (10), not old (1)
+        fireEvent.click(screen.getByLabelText(/start timer/i));
+        act(() => jest.advanceTimersByTime(5000));
+
+        // Progress bar should reflect 10 minute session (5s out of 600s ≈ 0.83%)
+        const progressCircle = container.querySelector('circle[stroke="url(#progressGradient)"]');
+        const circumference = 2 * Math.PI * 144;
+        const expectedProgress = 0.83;
+        const expectedDashoffset = circumference * (1 - expectedProgress / 100);
+
+        const dashoffset = progressCircle?.getAttribute('stroke-dashoffset');
+        expect(parseFloat(dashoffset || '0')).toBeCloseTo(expectedDashoffset, 0);
+      });
+    });
+
+    describe('Skip button', () => {
+      it('should switch from focus to break', () => {
+        render(<PomodoroTimer {...defaultProps} focusTime={25} shortBreakTime={5} />);
+
+        expect(screen.getByText(/focus/i)).toBeInTheDocument();
+
+        fireEvent.click(screen.getByLabelText(/skip session/i));
+
+        expect(screen.getByText(/break/i)).toBeInTheDocument();
+        expect(screen.getByText(/5:00/)).toBeInTheDocument();
+      });
+
+      it('should preserve running state when skipping', () => {
+        render(<PomodoroTimer {...defaultProps} focusTime={1} shortBreakTime={1} />);
+
+        // Start focus timer
+        fireEvent.click(screen.getByLabelText(/start timer/i));
+
+        // Skip to break
+        fireEvent.click(screen.getByLabelText(/skip session/i));
+
+        // Timer should still be running (counting down)
+        act(() => jest.advanceTimersByTime(1000));
+        expect(screen.getByText(/0:59/)).toBeInTheDocument();
+      });
+
+      it('should clear sessionStartFocusTime when skipping', () => {
+        const { container, rerender } = render(
+          <PomodoroTimer {...defaultProps} focusTime={1} />
+        );
+
+        // Start timer
+        fireEvent.click(screen.getByLabelText(/start timer/i));
+        act(() => jest.advanceTimersByTime(5000));
+
+        // Change settings and skip to break
+        rerender(<PomodoroTimer {...defaultProps} focusTime={10} shortBreakTime={5} />);
+        fireEvent.click(screen.getByLabelText(/skip session/i));
+
+        // Skip back to focus
+        fireEvent.click(screen.getByLabelText(/skip session/i));
+
+        // Progress should use new focusTime (10), not old (1)
+        act(() => jest.advanceTimersByTime(5000));
+
+        const progressCircle = container.querySelector('circle[stroke="url(#progressGradient)"]');
+        const circumference = 2 * Math.PI * 144;
+        const expectedProgress = 0.83; // 5s out of 600s
+        const expectedDashoffset = circumference * (1 - expectedProgress / 100);
+
+        const dashoffset = progressCircle?.getAttribute('stroke-dashoffset');
+        expect(parseFloat(dashoffset || '0')).toBeCloseTo(expectedDashoffset, 0);
+      });
+    });
+
+    describe('Start/Pause button', () => {
+      it('should start timer when clicked', () => {
+        render(<PomodoroTimer {...defaultProps} focusTime={25} />);
+
+        fireEvent.click(screen.getByLabelText(/start timer/i));
+
+        act(() => jest.advanceTimersByTime(1000));
+        expect(screen.getByText(/24:59/)).toBeInTheDocument();
+      });
+
+      it('should pause timer when clicked while running', () => {
+        render(<PomodoroTimer {...defaultProps} focusTime={25} />);
+
+        // Start
+        fireEvent.click(screen.getByLabelText(/start timer/i));
+        act(() => jest.advanceTimersByTime(5000));
+
+        expect(screen.getByText(/24:55/)).toBeInTheDocument();
+
+        // Pause
+        fireEvent.click(screen.getByLabelText(/pause timer/i));
+
+        // Time should not advance
+        act(() => jest.advanceTimersByTime(10000));
+        expect(screen.getByText(/24:55/)).toBeInTheDocument();
+      });
+
+      it('should toggle between start and pause', () => {
+        render(<PomodoroTimer {...defaultProps} focusTime={25} />);
+
+        // Initially shows "Start"
+        expect(screen.getByLabelText(/start timer/i)).toBeInTheDocument();
+
+        // Click to start
+        fireEvent.click(screen.getByLabelText(/start timer/i));
+
+        // Should now show "Pause"
+        expect(screen.getByLabelText(/pause timer/i)).toBeInTheDocument();
+
+        // Click to pause
+        fireEvent.click(screen.getByLabelText(/pause timer/i));
+
+        // Should show "Start" again
+        expect(screen.getByLabelText(/start timer/i)).toBeInTheDocument();
+      });
+    });
+  });
 });
