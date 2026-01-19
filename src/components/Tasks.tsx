@@ -2,13 +2,10 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTasks } from '@/hooks/useTasks';
 import TaskItem from './TaskItem';
 import PriorityMatrix from './PriorityMatrix';
-
-// Priority values mapping: position -> priority
-const PRIORITY_VALUES = [1, 2, 3, 4, 6, 9];
 
 export default function Tasks() {
   const {
@@ -28,10 +25,8 @@ export default function Tasks() {
   } = useTasks();
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [selectedPriority, setSelectedPriority] = useState(4);
   const [draggedTaskIndex, setDraggedTaskIndex] = useState<number | null>(null);
   const [showPriorityMatrixDialog, setShowPriorityMatrixDialog] = useState(false);
-  const previousPriorityRef = useRef(4);
 
   // Handle Escape key to close dialog
   useEffect(() => {
@@ -48,120 +43,9 @@ export default function Tasks() {
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTaskTitle.trim()) {
-      addTask(newTaskTitle, selectedPriority);
+      addTask(newTaskTitle, 4); // Default priority of 4
       setNewTaskTitle('');
-      setSelectedPriority(4); // Reset to default
-      previousPriorityRef.current = 4;
     }
-  };
-
-  // Correct invalid priority values to nearest valid value
-  const correctPriorityValue = (value: number): number => {
-    // Handle out-of-range values
-    if (value < 1) return 1;
-    if (value > 9) return 9;
-
-    // If already a valid value, return it
-    if (PRIORITY_VALUES.includes(value)) return value;
-
-    // Find nearest valid value (round up on ties)
-    let nearest = PRIORITY_VALUES[0];
-    let minDiff = Math.abs(value - nearest);
-
-    for (const validValue of PRIORITY_VALUES) {
-      const diff = Math.abs(value - validValue);
-      // Prefer higher values on ties (diff === minDiff)
-      if (diff < minDiff || (diff === minDiff && validValue > nearest)) {
-        minDiff = diff;
-        nearest = validValue;
-      }
-    }
-
-    return nearest;
-  };
-
-  const handlePriorityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 4;
-    const previousValue = previousPriorityRef.current;
-
-    // Determine direction: is the value increasing or decreasing?
-    const isIncreasing = value > previousValue;
-
-    let corrected: number;
-
-    // If it's a valid value, use it directly
-    if (PRIORITY_VALUES.includes(value)) {
-      corrected = value;
-    } else {
-      // Invalid value - need to find next valid value in the direction of change
-      if (isIncreasing) {
-        // Find next higher valid value
-        corrected = PRIORITY_VALUES.find(v => v > previousValue) || PRIORITY_VALUES[0];
-      } else {
-        // Find next lower valid value
-        corrected = [...PRIORITY_VALUES].reverse().find(v => v < previousValue) || PRIORITY_VALUES[PRIORITY_VALUES.length - 1];
-      }
-    }
-
-    previousPriorityRef.current = corrected;
-    setSelectedPriority(corrected);
-  };
-
-  const handlePriorityBlur = () => {
-    const corrected = correctPriorityValue(selectedPriority);
-    if (corrected !== selectedPriority) {
-      setSelectedPriority(corrected);
-    }
-  };
-
-  const handlePriorityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      e.preventDefault(); // Prevent default increment/decrement behavior
-
-      const currentIndex = PRIORITY_VALUES.indexOf(selectedPriority);
-      let newIndex: number;
-
-      if (e.key === 'ArrowUp') {
-        // Move to next priority value, wrap to start if at end
-        newIndex = currentIndex === PRIORITY_VALUES.length - 1 ? 0 : currentIndex + 1;
-      } else {
-        // Move to previous priority value, wrap to end if at start
-        newIndex = currentIndex === 0 ? PRIORITY_VALUES.length - 1 : currentIndex - 1;
-      }
-
-      const newPriority = PRIORITY_VALUES[newIndex];
-      previousPriorityRef.current = newPriority;
-      setSelectedPriority(newPriority);
-    }
-  };
-
-  // Get priority background color
-  const getPriorityBgColor = (priority: number): string => {
-    switch (priority) {
-      case 9:
-        return 'bg-green-700'; // dark green
-      case 6:
-        return 'bg-green-400'; // light green
-      case 4:
-      case 3:
-        return 'bg-yellow-400'; // yellow
-      case 2:
-        return 'bg-orange-500'; // orange
-      case 1:
-        return 'bg-red-500'; // red
-      default:
-        return 'bg-gray-200'; // fallback
-    }
-  };
-
-  // Get priority text color for visibility
-  const getPriorityTextColor = (priority: number): string => {
-    // Dark backgrounds need white text
-    if ([9, 2, 1].includes(priority)) {
-      return 'text-white';
-    }
-    // Light backgrounds need black text
-    return 'text-black';
   };
 
   // Task drag handlers
@@ -203,7 +87,6 @@ export default function Tasks() {
       {/* Add Task Form */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <form onSubmit={handleAddTask}>
-          {/* Input and Button Row */}
           <div className="flex gap-2 items-center">
             <input
               type="text"
@@ -211,17 +94,6 @@ export default function Tasks() {
               onChange={(e) => setNewTaskTitle(e.target.value)}
               placeholder="Add a new task..."
               className="flex-1 px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-gray-500"
-            />
-            <input
-              type="number"
-              value={selectedPriority}
-              onChange={handlePriorityChange}
-              onBlur={handlePriorityBlur}
-              onKeyDown={handlePriorityKeyDown}
-              aria-label="Task priority"
-              className={`w-16 h-10 text-center text-sm font-bold border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 ${getPriorityBgColor(selectedPriority)} ${getPriorityTextColor(selectedPriority)}`}
-              min="1"
-              max="9"
             />
             <button
               type="submit"

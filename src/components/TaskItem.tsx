@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Task } from '@/types/task';
 import SubtaskItem from './SubtaskItem';
 
@@ -48,6 +48,7 @@ export default function TaskItem({
   const [editTitle, setEditTitle] = useState(task.title);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [draggedSubtaskIndex, setDraggedSubtaskIndex] = useState<number | null>(null);
+  const previousPriorityRef = useRef(task.priority);
 
   const handleSaveTitle = () => {
     if (editTitle.trim()) {
@@ -79,26 +80,58 @@ export default function TaskItem({
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const totalSubtasks = task.subtasks.length;
 
-  // Get slider position (0-100) from priority value
-  const getSliderPosition = (priority: number): number => {
-    const index = PRIORITY_VALUES.indexOf(priority);
-    return (index / (PRIORITY_VALUES.length - 1)) * 100;
+  // Priority input change handler
+  const handlePriorityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 4;
+    const previousValue = previousPriorityRef.current;
+
+    // Determine direction: is the value increasing or decreasing?
+    const isIncreasing = value > previousValue;
+
+    let corrected: number;
+
+    // If it's a valid value, use it directly
+    if (PRIORITY_VALUES.includes(value)) {
+      corrected = value;
+    } else {
+      // Invalid value - need to find next valid value in the direction of change
+      if (isIncreasing) {
+        // Find next higher valid value
+        corrected = PRIORITY_VALUES.find(v => v > previousValue) || PRIORITY_VALUES[0];
+      } else {
+        // Find next lower valid value
+        corrected = [...PRIORITY_VALUES].reverse().find(v => v < previousValue) || PRIORITY_VALUES[PRIORITY_VALUES.length - 1];
+      }
+    }
+
+    previousPriorityRef.current = corrected;
+    onUpdatePriority(task.id, corrected);
   };
 
-  // Get priority value from slider position (0-100)
-  const getPriorityFromPosition = (position: number): number => {
-    const index = Math.round((position / 100) * (PRIORITY_VALUES.length - 1));
-    return PRIORITY_VALUES[Math.max(0, Math.min(index, PRIORITY_VALUES.length - 1))];
+  // Priority keyboard handler for arrow keys
+  const handlePriorityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault(); // Prevent default increment/decrement behavior
+
+      const currentIndex = PRIORITY_VALUES.indexOf(task.priority);
+      let newIndex: number;
+
+      if (e.key === 'ArrowUp') {
+        // Move to next priority value, wrap to start if at end
+        newIndex = currentIndex === PRIORITY_VALUES.length - 1 ? 0 : currentIndex + 1;
+      } else {
+        // Move to previous priority value, wrap to end if at start
+        newIndex = currentIndex === 0 ? PRIORITY_VALUES.length - 1 : currentIndex - 1;
+      }
+
+      const newPriority = PRIORITY_VALUES[newIndex];
+      previousPriorityRef.current = newPriority;
+      onUpdatePriority(task.id, newPriority);
+    }
   };
 
-  const handlePriorityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const position = parseInt(e.target.value);
-    const priority = getPriorityFromPosition(position);
-    onUpdatePriority(task.id, priority);
-  };
-
-  // Get priority badge color based on priority value
-  const getPriorityColor = (priority: number): string => {
+  // Get priority background color based on priority value
+  const getPriorityBgColor = (priority: number): string => {
     switch (priority) {
       case 9:
         return 'bg-green-700'; // dark green
@@ -112,8 +145,18 @@ export default function TaskItem({
       case 1:
         return 'bg-red-500'; // red
       default:
-        return 'bg-gray-500'; // fallback
+        return 'bg-gray-200'; // fallback
     }
+  };
+
+  // Get priority text color for visibility
+  const getPriorityTextColor = (priority: number): string => {
+    // Dark backgrounds need white text
+    if ([9, 2, 1].includes(priority)) {
+      return 'text-white';
+    }
+    // Light backgrounds need black text
+    return 'text-black';
   };
 
   // Subtask drag handlers
@@ -188,20 +231,22 @@ export default function TaskItem({
                 autoFocus
               />
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0 overflow-hidden">
                 <h3
                   onDoubleClick={() => setIsEditing(true)}
-                  className={`text-base font-medium cursor-text ${
+                  className={`text-base font-medium cursor-text min-w-0 ${
+                    task.expanded ? 'break-all' : 'truncate'
+                  } ${
                     task.completed
                       ? 'line-through text-gray-400'
                       : 'text-gray-800'
                   }`}
-                  title="Double-click to edit"
+                  title={task.expanded ? undefined : task.title}
                 >
                   {task.title}
                 </h3>
                 {totalSubtasks > 0 && (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 flex-shrink-0">
                     ({completedSubtasks}/{totalSubtasks})
                   </span>
                 )}
@@ -210,11 +255,18 @@ export default function TaskItem({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
-            {/* Priority Badge */}
-            <span className={`px-2 py-1 text-xs font-bold text-white rounded-full ${getPriorityColor(task.priority)}`}>
-              {task.priority}
-            </span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Priority Input */}
+            <input
+              type="number"
+              value={task.priority}
+              onChange={handlePriorityInputChange}
+              onKeyDown={handlePriorityKeyDown}
+              aria-label="Task priority"
+              className={`w-10 h-8 text-center text-sm font-bold border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 ${getPriorityBgColor(task.priority)} ${getPriorityTextColor(task.priority)}`}
+              min="1"
+              max="9"
+            />
 
             {/* Expand/Collapse Button - Always visible */}
             <button
@@ -263,30 +315,6 @@ export default function TaskItem({
         {/* Subtasks Section */}
         {task.expanded && (
           <div className="mt-4 ml-8 space-y-2">
-            {/* Priority Slider */}
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center text-sm">
-                <span className="text-gray-700 font-medium">Priority: {task.priority}</span>
-              </div>
-              <div className="relative">
-                <div className="h-2 bg-gradient-to-r from-red-500 via-yellow-500 via-lime-400 to-green-500 rounded-full"></div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={getSliderPosition(task.priority)}
-                  onChange={handlePriorityChange}
-                  className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer"
-                />
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md border-2 border-black flex items-center justify-center text-xs font-bold text-black pointer-events-none"
-                  style={{ left: `calc(${getSliderPosition(task.priority)}% - 12px)` }}
-                >
-                  {task.priority}
-                </div>
-              </div>
-            </div>
-
             {/* Subtasks List */}
             {task.subtasks.map((subtask, idx) => (
               <SubtaskItem
