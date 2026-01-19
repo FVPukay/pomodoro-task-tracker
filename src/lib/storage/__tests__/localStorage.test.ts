@@ -26,7 +26,8 @@ describe('LocalStorageAdapter', () => {
           expanded: false,
           subtasks: [],
           createdAt: Date.now(),
-          order: 0
+          order: 0,
+          priority: 4
         }
       ];
 
@@ -59,7 +60,8 @@ describe('LocalStorageAdapter', () => {
           expanded: false,
           subtasks: [],
           createdAt: Date.now(),
-          order: 0
+          order: 0,
+          priority: 4
         }
       ];
 
@@ -90,7 +92,8 @@ describe('LocalStorageAdapter', () => {
           expanded: false,
           subtasks: [],
           createdAt: Date.now(),
-          order: 0
+          order: 0,
+          priority: 4
         }
       ];
 
@@ -111,7 +114,8 @@ describe('LocalStorageAdapter', () => {
           expanded: false,
           subtasks: [],
           createdAt: Date.now(),
-          order: 0
+          order: 0,
+          priority: 4
         }
       ];
 
@@ -151,7 +155,8 @@ describe('LocalStorageAdapter', () => {
           expanded: false,
           subtasks: [],
           createdAt: Date.now(),
-          order: 0
+          order: 0,
+          priority: 4
         }
       ];
 
@@ -177,7 +182,8 @@ describe('LocalStorageAdapter', () => {
           expanded: false,
           subtasks: [],
           createdAt: Date.now(),
-          order: 0
+          order: 0,
+          priority: 4
         }
       ];
 
@@ -304,7 +310,8 @@ describe('LocalStorageAdapter', () => {
           expanded: false,
           subtasks: [],
           createdAt: Date.now(),
-          order: 0
+          order: 0,
+          priority: 4
         }
       ];
 
