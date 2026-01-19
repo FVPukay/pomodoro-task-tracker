@@ -635,4 +635,127 @@ describe('Tasks Component', () => {
       }
     });
   });
+
+  describe('Priority Matrix Dialog', () => {
+    it('should render Priority Matrix button in header', () => {
+      render(<Tasks />);
+
+      const button = screen.getByLabelText('Open Priority Matrix');
+      expect(button).toBeInTheDocument();
+      expect(button).toHaveTextContent('Priority Matrix');
+    });
+
+    it('should open dialog when Priority Matrix button is clicked', async () => {
+      const user = userEvent.setup();
+      render(<Tasks />);
+
+      const button = screen.getByLabelText('Open Priority Matrix');
+      await user.click(button);
+
+      // Dialog should be visible with proper accessibility attributes
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toBeInTheDocument();
+      expect(dialog).toHaveAttribute('aria-modal', 'true');
+    });
+
+    it('should render PriorityMatrix component inside dialog', async () => {
+      const user = userEvent.setup();
+      render(<Tasks />);
+
+      const button = screen.getByLabelText('Open Priority Matrix');
+      await user.click(button);
+
+      // Priority Matrix content should be visible (check for unique content from PriorityMatrix component)
+      expect(screen.getByText('From Taro')).toBeInTheDocument();
+      expect(screen.getByText('High Impact (3)')).toBeInTheDocument();
+    });
+
+    it('should close dialog when backdrop is clicked', async () => {
+      const user = userEvent.setup();
+      render(<Tasks />);
+
+      // Open dialog
+      const button = screen.getByLabelText('Open Priority Matrix');
+      await user.click(button);
+
+      // Dialog should be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      // Click backdrop (the dialog overlay itself)
+      const backdrop = screen.getByRole('dialog');
+      await user.click(backdrop);
+
+      // Dialog should be closed
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('should close dialog when close button is clicked', async () => {
+      const user = userEvent.setup();
+      render(<Tasks />);
+
+      // Open dialog
+      const button = screen.getByLabelText('Open Priority Matrix');
+      await user.click(button);
+
+      // Dialog should be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      // Click close button
+      const closeButton = screen.getByLabelText('Close Priority Matrix dialog');
+      await user.click(closeButton);
+
+      // Dialog should be closed
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('should close dialog when Escape key is pressed', async () => {
+      const user = userEvent.setup();
+      render(<Tasks />);
+
+      // Open dialog
+      const button = screen.getByLabelText('Open Priority Matrix');
+      await user.click(button);
+
+      // Dialog should be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      // Press Escape key
+      await user.keyboard('{Escape}');
+
+      // Dialog should be closed
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('should not close dialog when clicking inside dialog content', async () => {
+      const user = userEvent.setup();
+      render(<Tasks />);
+
+      // Open dialog
+      const button = screen.getByLabelText('Open Priority Matrix');
+      await user.click(button);
+
+      // Dialog should be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      // Click inside the dialog content (on unique content from PriorityMatrix)
+      const dialogContent = screen.getByText('From Taro');
+      await user.click(dialogContent);
+
+      // Dialog should still be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+
+    it('should have accessible close button with proper aria-label', async () => {
+      const user = userEvent.setup();
+      render(<Tasks />);
+
+      // Open dialog
+      const button = screen.getByLabelText('Open Priority Matrix');
+      await user.click(button);
+
+      // Close button should have proper aria-label
+      const closeButton = screen.getByLabelText('Close Priority Matrix dialog');
+      expect(closeButton).toBeInTheDocument();
+    });
+  });
 });

@@ -2,9 +2,10 @@
 
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTasks } from '@/hooks/useTasks';
 import TaskItem from './TaskItem';
+import PriorityMatrix from './PriorityMatrix';
 
 // Priority values mapping: position -> priority
 const PRIORITY_VALUES = [1, 2, 3, 4, 6, 9];
@@ -29,7 +30,20 @@ export default function Tasks() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [selectedPriority, setSelectedPriority] = useState(4);
   const [draggedTaskIndex, setDraggedTaskIndex] = useState<number | null>(null);
+  const [showPriorityMatrixDialog, setShowPriorityMatrixDialog] = useState(false);
   const previousPriorityRef = useRef(4);
+
+  // Handle Escape key to close dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showPriorityMatrixDialog) {
+        setShowPriorityMatrixDialog(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showPriorityMatrixDialog]);
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,7 +188,16 @@ export default function Tasks() {
     <div className="w-full h-full max-h-full bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <h2 className="text-xl font-semibold text-gray-800">Tasks and Subtasks</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-800">Tasks and Subtasks</h2>
+          <button
+            onClick={() => setShowPriorityMatrixDialog(true)}
+            className="px-3 py-1.5 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
+            aria-label="Open Priority Matrix"
+          >
+            Priority Matrix
+          </button>
+        </div>
       </div>
 
       {/* Add Task Form */}
@@ -265,6 +288,34 @@ export default function Tasks() {
             <span>
               {tasks.reduce((acc, t) => acc + t.subtasks.length, 0)} subtasks total
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Priority Matrix Dialog */}
+      {showPriorityMatrixDialog && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
+          onClick={() => setShowPriorityMatrixDialog(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="priority-matrix-dialog-title"
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-md mx-4 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowPriorityMatrixDialog(false)}
+              className="absolute top-3 right-3 p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
+              aria-label="Close Priority Matrix dialog"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+            <PriorityMatrix />
           </div>
         </div>
       )}

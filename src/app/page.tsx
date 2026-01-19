@@ -6,7 +6,6 @@ import PomodoroTimer from '@/components/PomodoroTimer';
 import Settings from '@/components/Settings';
 import Completed from '@/components/Completed';
 import Tasks from '@/components/Tasks';
-import PriorityMatrix from '@/components/PriorityMatrix';
 import {
   loadSettings,
   loadCompleted,
@@ -124,14 +123,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right column */}
-          <div className="flex flex-col min-w-0 h-full">
-            <div className="flex-1 mb-4 min-w-0 min-h-0 overflow-hidden">
+          {/* Right column - max-height prevents expansion, Tasks scrolls internally */}
+          <div className="flex flex-col min-w-0 h-full max-h-[500px] md:max-h-[700px]">
+            <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
               <Tasks />
-            </div>
-
-            <div className="flex-1 min-w-0 min-h-0">
-              <PriorityMatrix />
             </div>
           </div>
 
