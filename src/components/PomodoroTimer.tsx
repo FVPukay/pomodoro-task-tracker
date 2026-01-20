@@ -87,6 +87,19 @@ export default function PomodoroTimer({
     onRunningChange(isRunning);
   }, [isRunning, onRunningChange]);
 
+  // Prevent accidental browser refresh when timer is running or paused
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isRunning || isPaused) {
+        e.preventDefault();
+        e.returnValue = ''; // Required for Chrome
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isRunning, isPaused]);
+
   // Persist timer state to localStorage whenever it changes
   useEffect(() => {
     saveStats({
