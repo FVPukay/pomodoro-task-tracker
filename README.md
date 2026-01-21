@@ -4,7 +4,7 @@ A modern, minimalist Pomodoro timer with integrated task management to help you 
 
 **[YouTube Video](https://youtu.be/oKsvRzVoc18)**
 
-**[Live App](https://pomodoro-task-tracker.vercel.app)**
+**[Live App](https://pomodoro-task-tracker-sigma.vercel.app/)**
 
 ## Features
 
@@ -35,10 +35,10 @@ A modern, minimalist Pomodoro timer with integrated task management to help you 
 ## Tech Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) with React 19
-- **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS
-- **Testing**: Jest + React Testing Library
-- **Deployment**: Vercel
+- **Language**: [TypeScript](https://www.typescriptlang.org/) (strict mode)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Testing**: [Jest](https://jestjs.io/) + [React Testing Library](https://testing-library.com/)
+- **Deployment**: [Vercel](https://vercel.com/)
 
 ## Contributing
 
@@ -51,7 +51,7 @@ Contributions are welcome! Here's how to get started:
 5. Commit your changes following conventional commits format
 6. Push to your branch and open a Pull Request
 
-**Looking for ideas?** Check out [open issues](https://github.com/frederickpukay/pomodoro-task-tracker/issues) for ways to contribute.
+**Looking for ideas?** Check out [open issues](https://github.com/FVPukay/pomodoro-task-tracker/issues) for ways to contribute.
 
 ## Local Development
 
@@ -91,7 +91,7 @@ npm start
 ## Bugs & Feature Requests
 
 If you encounter bugs or have ideas for new features, please share them at:
-[GitHub Issues](https://github.com/frederickpukay/pomodoro-task-tracker/issues)
+[GitHub Issues](https://github.com/FVPukay/pomodoro-task-tracker/issues)
 
 ## License
 
