@@ -5,8 +5,8 @@ export default function Header() {
   const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'https://yourapp.com';
   const SHARE_TEXT = 'Try this free, ad-free, open-source Pomodoro Timer & Task Tracker! No signups, no ads, just productivity. 🎯';
   
-  // Feedback link - UPDATE THIS WHEN READY
-  const FEEDBACK_LINK = 'https://forms.google.com/your-form-id'; // Replace with your actual feedback form link
+  // Feedback link
+  const FEEDBACK_LINK = 'https://github.com/FVPukay/pomodoro-task-tracker/issues';
 
   const handleEmailShare = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
