@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pomodoro Timer & Task Tracker
 
-## Getting Started
+A modern, minimalist Pomodoro timer with integrated task management to help you stay focused and productive.
 
-First, run the development server:
+**[Live Demo →](https://pomodoro-task-tracker.vercel.app)** *(Update after Phase 8)*
+
+## Features
+
+### Timer
+- ⏱️ **Customizable intervals** - Defaults: Focus 25min, Short break 5min, Long break 30min
+- 🔄 **Automatic progression** - Cycles through focus/break sessions automatically
+- 📊 **Visual progress** - Circular progress indicator with gradient design
+- 🔊 **Audio notifications** - Sound alert when sessions complete
+- ⏸️ **Pause & Resume** - Full control over your workflow
+
+### Task Management
+- ✅ **Tasks & Subtasks** - Organize work into manageable chunks
+- 🎯 **Priority Matrix** - Assign priorities (High/Low Impact × High/Low Time)
+- ✏️ **Inline editing** - Quick edits without switching views
+- 🗂️ **Drag & drop** - Reorder tasks easily
+- 💾 **Auto-save** - All data saved to localStorage
+
+### Analytics
+- 📈 **Session tracking** - See your completed Pomodoros and total focus time
+- 📊 **Persistent stats** - Track your productivity over time
+
+### Privacy & Performance
+- 🔒 **100% private** - All data stored locally in your browser
+- 🚫 **No ads, no tracking** - Completely ad-free experience
+- 📱 **Fully responsive** - Works on desktop, tablet, and mobile
+- ⚡ **Fast & lightweight** - Built with modern web technologies
+
+## Tech Stack
+
+- **Framework**: [Next.js 15](https://nextjs.org/) with React 19
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS
+- **Testing**: Jest + React Testing Library
+- **Deployment**: Vercel
+
+## Contributing
+
+Contributions are welcome! Here's how to get started:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests (`npm test`) and ensure they pass
+5. Commit your changes following conventional commits format
+6. Push to your branch and open a Pull Request
+
+**Looking for ideas?** Check out [open issues](https://github.com/frederickpukay/pomodoro-task-tracker/issues) for ways to contribute.
+
+## Local Development
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/frederickpukay/pomodoro-task-tracker.git
+   cd pomodoro-task-tracker
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+5. Run tests:
+   ```bash
+   npm test
+   ```
+
+## Building for Production
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Build the application
+npm run build
+
+# Start production server
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Bugs & Feature Requests
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+If you encounter bugs or have ideas for new features, please share them at:
+[GitHub Issues](https://github.com/frederickpukay/pomodoro-task-tracker/issues)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## License
 
-## Learn More
+[MIT License](LICENSE) - Copyright (c) 2026 Frederick Pukay
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
