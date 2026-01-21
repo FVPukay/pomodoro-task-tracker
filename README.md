@@ -2,7 +2,9 @@
 
 A modern, minimalist Pomodoro timer with integrated task management to help you stay focused and productive.
 
-**[Live Demo →](https://pomodoro-task-tracker.vercel.app)** *(Update after Phase 8)*
+**[YouTube Video](https://youtu.be/oKsvRzVoc18)**
+
+**[Live App](https://pomodoro-task-tracker.vercel.app)**
 
 ## Features
 
