@@ -111,7 +111,7 @@ export default function SubtaskItem({
       {/* Delete Button */}
       <button
         onClick={() => onDelete(taskId, subtask.id)}
-        className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-opacity"
+        className="text-red-500 hover:text-red-700 transition-colors"
         aria-label="Delete subtask"
       >
         <svg
