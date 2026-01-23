@@ -1,33 +1,76 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function Header() {
   // Centralized share configuration
   const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'https://yourapp.com';
   const SHARE_TEXT = 'Try this free, ad-free, open-source Pomodoro Timer & Task Tracker! No signups, no ads, just productivity. 🎯';
-  
+
   // Feedback link
   const FEEDBACK_LINK = 'https://github.com/FVPukay/pomodoro-task-tracker/issues';
 
+  // Analytics state
+  const [stats, setStats] = useState({ visits: 0, shares: 0, pomodoros: 0 });
+
+  // Fetch stats on mount
+  useEffect(() => {
+    fetch('/api/stats/get')
+      .then(res => res.json())
+      .then(data => setStats(data))
+      .catch(err => console.error('Failed to fetch stats:', err));
+  }, []);
+
+  // Function to refresh stats
+  const refreshStats = useCallback(() => {
+    fetch('/api/stats/get')
+      .then(res => res.json())
+      .then(data => setStats(data))
+      .catch(err => console.error('Failed to fetch stats:', err));
+  }, []);
+
+  // Listen for stats-updated custom event
+  useEffect(() => {
+    window.addEventListener('stats-updated', refreshStats);
+    return () => window.removeEventListener('stats-updated', refreshStats);
+  }, [refreshStats]);
+
+  // Track share events
+  const trackShare = () => {
+    fetch('/api/stats/increment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'shares' }),
+    })
+      .then(() => {
+        // Dispatch custom event to update stats
+        window.dispatchEvent(new Event('stats-updated'));
+      })
+      .catch(err => console.error('Failed to track share:', err));
+  };
+
   const handleEmailShare = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    trackShare();
     const subject = encodeURIComponent('Check out this Pomodoro Timer!');
     const body = encodeURIComponent(`${SHARE_TEXT}\n\n${APP_URL}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   const handleTwitterShare = () => {
+    trackShare();
     const text = encodeURIComponent(SHARE_TEXT);
     const url = encodeURIComponent(APP_URL);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'width=550,height=420');
   };
 
   const handleRedditShare = () => {
+    trackShare();
     const title = encodeURIComponent('Pomodoro Timer & Task Tracker');
     const url = encodeURIComponent(APP_URL);
     window.open(`https://reddit.com/submit?title=${title}&url=${url}`, '_blank', 'width=850,height=600');
   };
 
   const handleFacebookShare = () => {
+    trackShare();
     const url = encodeURIComponent(APP_URL);
     const quote = encodeURIComponent(SHARE_TEXT);
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${quote}`, '_blank', 'width=550,height=420');
@@ -100,7 +143,7 @@ export default function Header() {
           </button>
 
           {/* Reddit Button */}
-          <button 
+          <button
             onClick={handleRedditShare}
             className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all hover:scale-105"
             aria-label="Share on Reddit"
@@ -109,6 +152,42 @@ export default function Header() {
               <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
             </svg>
           </button>
+        </div>
+      </div>
+
+      {/* Full-width divider */}
+      <div className="w-full border-t border-gray-200 mt-6"></div>
+
+      {/* Analytics Row - Third Row */}
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 text-sm">
+          {/* Site Visits */}
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span className="text-gray-700 font-medium">{stats.visits.toLocaleString()}</span>
+            <span className="text-gray-500">visits</span>
+          </div>
+
+          {/* Shares */}
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            <span className="text-gray-700 font-medium">{stats.shares.toLocaleString()}</span>
+            <span className="text-gray-500">shares</span>
+          </div>
+
+          {/* Pomodoros Completed */}
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-gray-700 font-medium">{stats.pomodoros.toLocaleString()}</span>
+            <span className="text-gray-500">pomodoros</span>
+          </div>
         </div>
       </div>
     </header>

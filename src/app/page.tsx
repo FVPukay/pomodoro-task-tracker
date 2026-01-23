@@ -34,6 +34,15 @@ export default function Home() {
     setLongBreakTime(settings.longBreakTime);
   }, []);
 
+  // Track site visit on mount
+  useEffect(() => {
+    fetch('/api/stats/increment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'visits' }),
+    }).catch(err => console.error('Failed to track visit:', err));
+  }, []);
+
   // Persist settings to localStorage whenever they change
   useEffect(() => {
     saveSettings({ focusTime, shortBreakTime, longBreakTime });
@@ -58,6 +67,18 @@ export default function Home() {
 
     if (addedMinutes != undefined && addedMinutes > 0) {
       setTotalFocusMinutes((prev) => prev + addedMinutes);
+
+      // Track pomodoro completion in analytics
+      fetch('/api/stats/increment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'pomodoros' }),
+      })
+        .then(() => {
+          // Dispatch custom event to update stats in header
+          window.dispatchEvent(new Event('stats-updated'));
+        })
+        .catch(err => console.error('Failed to track pomodoro:', err));
     }
   };
 
