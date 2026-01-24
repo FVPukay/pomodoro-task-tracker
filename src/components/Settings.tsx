@@ -45,19 +45,25 @@ export default function Settings({
   };
 
   const handleFocusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = parseInt(e.target.value) || 25;
+    const value = parseInt(e.target.value);
+    // Clamp between 1 and 90 minutes
+    const time = isNaN(value) ? 25 : Math.min(Math.max(value, 1), 90);
     onFocusTimeChange(time);
     showSavedMessage('Focus time saved!');
   };
 
   const handleShortBreakChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = parseInt(e.target.value) || 5;
+    const value = parseInt(e.target.value);
+    // Clamp between 1 and 15 minutes
+    const time = isNaN(value) ? 5 : Math.min(Math.max(value, 1), 15);
     onShortBreakTimeChange(time);
     showSavedMessage('Short break saved!');
   };
 
   const handleLongBreakChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = parseInt(e.target.value) || 30;
+    const value = parseInt(e.target.value);
+    // Clamp between 1 and 60 minutes
+    const time = isNaN(value) ? 30 : Math.min(Math.max(value, 1), 60);
     onLongBreakTimeChange(time);
     showSavedMessage('Long break saved!');
   };
@@ -97,7 +103,7 @@ export default function Settings({
                   : 'bg-white text-gray-800'
               }`}
               min="1"
-              max="60"
+              max="90"
             />
           </div>
         </div>
@@ -116,7 +122,7 @@ export default function Settings({
                   : 'bg-white text-gray-800'
               }`}
               min="1"
-              max="30"
+              max="15"
             />
           </div>
         </div>
