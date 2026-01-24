@@ -34,13 +34,20 @@ export default function Home() {
     setLongBreakTime(settings.longBreakTime);
   }, []);
 
-  // Track site visit on mount
+  // Track site visit on mount (once per session)
   useEffect(() => {
-    fetch('/api/stats/increment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event: 'visits' }),
-    }).catch(err => console.error('Failed to track visit:', err));
+    const hasTrackedVisit = sessionStorage.getItem('visit_tracked');
+    if (!hasTrackedVisit) {
+      // Set flag IMMEDIATELY to prevent race condition in React Strict Mode
+      sessionStorage.setItem('visit_tracked', 'true');
+
+      fetch('/api/stats/increment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'visits' }),
+      })
+        .catch(err => console.error('Failed to track visit:', err));
+    }
   }, []);
 
   // Persist settings to localStorage whenever they change
@@ -75,8 +82,10 @@ export default function Home() {
         body: JSON.stringify({ event: 'pomodoros' }),
       })
         .then(() => {
-          // Dispatch custom event to update stats in header
-          window.dispatchEvent(new Event('stats-updated'));
+          // Defer event dispatch to avoid interfering with state updates
+          setTimeout(() => {
+            window.dispatchEvent(new Event('stats-updated'));
+          }, 0);
         })
         .catch(err => console.error('Failed to track pomodoro:', err));
     }

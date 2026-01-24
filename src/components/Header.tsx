@@ -41,8 +41,10 @@ export default function Header() {
       body: JSON.stringify({ event: 'shares' }),
     })
       .then(() => {
-        // Dispatch custom event to update stats
-        window.dispatchEvent(new Event('stats-updated'));
+        // Defer event dispatch to avoid interfering with state updates
+        setTimeout(() => {
+          window.dispatchEvent(new Event('stats-updated'));
+        }, 0);
       })
       .catch(err => console.error('Failed to track share:', err));
   };
@@ -52,7 +54,12 @@ export default function Header() {
     trackShare();
     const subject = encodeURIComponent('Check out this Pomodoro Timer!');
     const body = encodeURIComponent(`${SHARE_TEXT}\n\n${APP_URL}`);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+
+    // Use anchor element to avoid page navigation/reload
+    const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+    const anchor = document.createElement('a');
+    anchor.href = mailtoLink;
+    anchor.click();
   };
 
   const handleTwitterShare = () => {
@@ -156,7 +163,7 @@ export default function Header() {
       </div>
 
       {/* Full-width divider */}
-      <div className="w-full border-t border-gray-200 mt-6"></div>
+      <div className="w-full border-t border-gray-200 mt-3"></div>
 
       {/* Analytics Row - Third Row */}
       <div className="max-w-4xl mx-auto px-4 py-6">

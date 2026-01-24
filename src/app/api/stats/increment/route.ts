@@ -1,13 +1,9 @@
 // src/app/api/stats/increment/route.ts
 
-import { createClient } from 'redis';
 import { NextResponse } from 'next/server';
+import { getRedisClient } from '@/lib/redis';
 
 export async function POST(request: Request) {
-  const client = createClient({
-    url: process.env.REDIS_URL,
-  });
-
   try {
     const { event } = await request.json();
 
@@ -19,12 +15,11 @@ export async function POST(request: Request) {
       );
     }
 
-    await client.connect();
+    // Use shared Redis client (no connect/quit needed)
+    const client = await getRedisClient();
 
     // Increment counter
     const newValue = await client.incr(`total_${event}`);
-
-    await client.quit();
 
     return NextResponse.json({
       event,
@@ -32,7 +27,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error incrementing stats:', error);
-    await client.quit().catch(() => {});
     return NextResponse.json(
       { error: 'Failed to increment stats' },
       { status: 500 }
