@@ -54,6 +54,7 @@ export default function Tasks() {
     e.dataTransfer.effectAllowed = 'move';
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleTaskDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';

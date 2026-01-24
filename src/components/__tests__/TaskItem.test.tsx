@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import TaskItem from '../TaskItem';
 import { Task } from '@/types/task';
 
@@ -169,7 +168,6 @@ describe('TaskItem Component', () => {
     });
 
     it('should not have priority slider in expanded view', async () => {
-      const user = userEvent.setup();
       render(<TaskItem {...defaultProps} task={{ ...mockTask, expanded: true }} />);
 
       // There should be no range input (slider)

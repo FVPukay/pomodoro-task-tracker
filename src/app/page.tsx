@@ -34,12 +34,16 @@ export default function Home() {
     setLongBreakTime(settings.longBreakTime);
   }, []);
 
-  // Track site visit on mount (once per session)
+  // Track site visit on mount (once per 24 hours)
   useEffect(() => {
-    const hasTrackedVisit = sessionStorage.getItem('visit_tracked');
-    if (!hasTrackedVisit) {
-      // Set flag IMMEDIATELY to prevent race condition in React Strict Mode
-      sessionStorage.setItem('visit_tracked', 'true');
+    const lastVisitTimestamp = localStorage.getItem('last_visit_timestamp');
+    const now = Date.now();
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+    // Track visit if no previous visit OR last visit was >24 hours ago
+    if (!lastVisitTimestamp || (now - parseInt(lastVisitTimestamp)) > TWENTY_FOUR_HOURS) {
+      // Set timestamp IMMEDIATELY to prevent race condition in React Strict Mode
+      localStorage.setItem('last_visit_timestamp', now.toString());
 
       fetch('/api/stats/increment', {
         method: 'POST',
