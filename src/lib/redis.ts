@@ -19,11 +19,6 @@ export async function getRedisClient(): Promise<RedisClientType> {
       console.error('Redis Client Error:', err);
     });
 
-    // Reconnect handler for development
-    client.on('reconnecting', () => {
-      console.log('Redis client reconnecting...');
-    });
-
     // Connect to Redis
     await client.connect();
   }

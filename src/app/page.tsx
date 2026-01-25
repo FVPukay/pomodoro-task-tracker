@@ -85,12 +85,6 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event: 'pomodoros' }),
       })
-        .then(() => {
-          // Defer event dispatch to avoid interfering with state updates
-          setTimeout(() => {
-            window.dispatchEvent(new Event('stats-updated'));
-          }, 0);
-        })
         .catch(err => console.error('Failed to track pomodoro:', err));
     }
   };
@@ -115,14 +109,14 @@ export default function Home() {
     >
       <Header />
 
-      <main className="max-w-full mx-auto px-4 py-8">
+      <main className="max-w-full mx-auto px-4 py-3">
         {/* responsive grid: one column on small screens, two columns on md+ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-[700px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 min-h-[calc(100vh-90px)]">
 
           {/* Left column */}
           <div className="flex flex-col min-w-0">
             {/* Timer area - allow it to grow */}
-            <div className="flex-1 mb-4 min-w-0">
+            <div className="flex-1 mb-2 min-w-0">
               <PomodoroTimer
                 focusTime={focusTime}
                 shortBreakTime={shortBreakTime}
@@ -134,7 +128,7 @@ export default function Home() {
             </div>
 
             {/* Settings + Completed row - responsive */}
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <div className="flex-1 min-w-0">
                 <Settings
                   focusTime={focusTime}
