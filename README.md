@@ -2,7 +2,7 @@
 
 A modern, minimalist Pomodoro timer with integrated task management to help you stay focused and productive.
 
-**[YouTube Video](https://youtu.be/TqdGd8CSNco)**
+**[YouTube Video](https://youtu.be/LdXyPhAVwng)**
 
 **[Live App](https://pomodoro-task-tracker-sigma.vercel.app/)**
 
@@ -22,13 +22,9 @@ A modern, minimalist Pomodoro timer with integrated task management to help you 
 - 🗂️ **Drag & drop** - Reorder tasks easily
 - 💾 **Auto-save** - All data saved to localStorage
 
-### Analytics
-- 📊 **Personal stats** - Your completed Pomodoros and focus time (stored locally in your browser)
-- 🌐 **Global stats** - Community-wide visits, shares, and pomodoros (live-updated across all users)
-
 ### Privacy & Performance
-- 🔒 **100% private** - All data stored locally in your browser
-- 🚫 **No ads, no tracking** - Completely ad-free experience
+- 🔒 **100% private** - All data stored locally in your browser, never sent to servers
+- 🚫 **No ads, no tracking, no signups** - Completely ad-free experience
 - 📱 **Fully responsive** - Works on desktop, tablet, and mobile
 - ⚡ **Fast & lightweight** - Built with modern web technologies
 
@@ -38,7 +34,6 @@ A modern, minimalist Pomodoro timer with integrated task management to help you 
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (strict mode)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Testing**: [Jest](https://jestjs.io/) + [React Testing Library](https://testing-library.com/)
-- **Analytics Storage**: [Redis](https://redis.io/) (Upstash via Vercel)
 - **Deployment**: [Vercel](https://vercel.com/)
 
 ## Contributing
