@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { loadStats, saveStats } from '@/lib/storage/pomodoroStorage';
 
 interface PomodoroTimerProps {
@@ -26,6 +26,10 @@ export default function PomodoroTimer({
   const [timeLeft, setTimeLeft] = useState<number>(focusTime * 60);
   const [isPaused, setIsPaused] = useState<boolean>(false); // Never restore paused state
   const [sessionStartFocusTime, setSessionStartFocusTime] = useState<number | null>(null); // Tracks initial commitment
+  const [endTime, setEndTime] = useState<number | null>(null); // Timestamp when timer should complete
+
+  // Ref to track if sound was played for current completion (prevents double-play and enables immediate sound on tab return)
+  const soundPlayedForCurrentCompletionRef = useRef<boolean>(false);
 
   // Play completion sound using Web Audio API - Triple Ascending Chime
   const playCompletionSound = () => {
@@ -72,7 +76,15 @@ export default function PomodoroTimer({
     setIsFocusSession(stats.isFocusSession);
     setTimeLeft(stats.timeLeft);
     setSessionStartFocusTime(stats.sessionStartFocusTime);
+    setEndTime(stats.endTime);
   }, [focusTime]);
+
+  // Reset sound played flag when a new session starts (endTime changes to a future time)
+  useEffect(() => {
+    if (endTime !== null && endTime > Date.now()) {
+      soundPlayedForCurrentCompletionRef.current = false;
+    }
+  }, [endTime]);
 
   // Capture initial focus time when starting a NEW focus session
   useEffect(() => {
@@ -108,8 +120,9 @@ export default function PomodoroTimer({
       timeLeft,
       isPaused,
       sessionStartFocusTime,
+      endTime,
     });
-  }, [isRunning, isFocusSession, timeLeft, isPaused, sessionStartFocusTime]);
+  }, [isRunning, isFocusSession, timeLeft, isPaused, sessionStartFocusTime, endTime]);
 
   // Update timer display when settings change (only if timer is fully stopped, not paused)
   useEffect(() => {
@@ -127,26 +140,36 @@ export default function PomodoroTimer({
     }
   }, [focusTime, shortBreakTime, longBreakTime, isRunning, isPaused, isFocusSession, completedPomodoros]);
 
+  // Timer tick effect - calculates time from endTime instead of decrementing
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined = undefined;
 
-    if (isRunning && timeLeft > 0) {
+    if (isRunning && endTime !== null) {
       interval = setInterval(() => {
-        setTimeLeft((prevTime) => prevTime - 1);
+        const now = Date.now();
+        const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+        setTimeLeft(remaining);
       }, 1000);
-    } else if (!isRunning && interval) {
-      clearInterval(interval);
     }
 
-    // When timeLeft reaches zero, transition
-    if (timeLeft === 0) {
-      if (interval) {
-        clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRunning, endTime]);
+
+  // Completion detection effect - separate from tick effect
+  useEffect(() => {
+    if (timeLeft === 0 && isRunning) {
+      // Timer completed - will auto-start next session
+      // Play sound only if not already played by visibility handler (prevents double-play)
+      if (!soundPlayedForCurrentCompletionRef.current) {
+        soundPlayedForCurrentCompletionRef.current = true;
+        playCompletionSound();
       }
 
+      let newTimeLeft: number;
       if (isFocusSession) {
         // a focus session completed
-        playCompletionSound(); // Play notification sound
         const updatedCount = completedPomodoros + 1;
         // Tell parent that a pomodoro completed - use the INITIAL commitment, not current setting
         const minutesToRecord = sessionStartFocusTime ?? focusTime; // Fallback to current if somehow null
@@ -155,20 +178,43 @@ export default function PomodoroTimer({
         // Clear the session start time since focus session is complete
         setSessionStartFocusTime(null);
         // Long break only after 4th, 8th, 12th, etc. pomodoro
-        setTimeLeft(updatedCount % 4 === 0 ? longBreakTime * 60 : shortBreakTime * 60);
+        newTimeLeft = (updatedCount % 4 === 0 ? longBreakTime : shortBreakTime) * 60;
+        setTimeLeft(newTimeLeft);
       } else {
         // break finished -> go back to focus
         setIsFocusSession(true);
-        setTimeLeft(focusTime * 60);
+        newTimeLeft = focusTime * 60;
+        setTimeLeft(newTimeLeft);
         // sessionStartFocusTime remains null - will be set when new focus session starts
       }
-    }
 
-    return () => {
-      if (interval) clearInterval(interval);
+      // Auto-start next session with new endTime
+      setEndTime(Date.now() + (newTimeLeft * 1000));
+      // Keep isRunning as true (auto-start)
+    }
+  }, [timeLeft, isRunning, isFocusSession, completedPomodoros, focusTime, shortBreakTime, longBreakTime, onPomodoroComplete, sessionStartFocusTime]);
+
+  // Visibility change effect - immediately update when tab becomes visible
+  // Also plays completion sound immediately if timer completed while tab was hidden
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isRunning && endTime !== null) {
+        const now = Date.now();
+        const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+
+        // If timer completed while tab was away, play sound immediately (not waiting for React effect cycle)
+        if (remaining === 0 && !soundPlayedForCurrentCompletionRef.current) {
+          soundPlayedForCurrentCompletionRef.current = true;
+          playCompletionSound();
+        }
+
+        setTimeLeft(remaining);
+      }
     };
-    // Note: include focusTime, shortBreakTime, longBreakTime so timer durations respond properly
-  }, [isRunning, timeLeft, isFocusSession, completedPomodoros, focusTime, shortBreakTime, longBreakTime, onPomodoroComplete, sessionStartFocusTime]);
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isRunning, endTime]);
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -178,9 +224,13 @@ export default function PomodoroTimer({
 
   const handleStartPause = () => {
     if (isRunning) {
+      // Pausing - capture remaining time, clear endTime
       setIsPaused(true);
+      setEndTime(null);
     } else {
+      // Starting/Resuming - calculate new endTime
       setIsPaused(false);
+      setEndTime(Date.now() + (timeLeft * 1000));
     }
     setIsRunning((prev) => !prev);
   };
@@ -189,6 +239,7 @@ export default function PomodoroTimer({
     // Single responsibility: Only reset the current timer, don't change mode or stats
     setIsRunning(false);
     setIsPaused(false);
+    setEndTime(null); // Clear endTime
     // Clear session start time - user is abandoning this session
     setSessionStartFocusTime(null);
     // Reset to current mode's time (don't switch modes)
@@ -207,17 +258,29 @@ export default function PomodoroTimer({
     // Single responsibility: Only switch mode, preserve running state
     // Clear session start time - user is abandoning current session
     setSessionStartFocusTime(null);
+
+    let newTimeLeft: number;
     if (isFocusSession) {
       // Switch to break
       setIsFocusSession(false);
       // Long break only after 4th, 8th, 12th, etc. pomodoro
       const breakTime = (completedPomodoros > 0 && completedPomodoros % 4 === 0) ? longBreakTime : shortBreakTime;
-      setTimeLeft(breakTime * 60);
+      newTimeLeft = breakTime * 60;
+      setTimeLeft(newTimeLeft);
     } else {
       // Switch to focus
       setIsFocusSession(true);
-      setTimeLeft(focusTime * 60);
+      newTimeLeft = focusTime * 60;
+      setTimeLeft(newTimeLeft);
     }
+
+    // If timer is running, set new endTime for the new session
+    if (isRunning) {
+      setEndTime(Date.now() + (newTimeLeft * 1000));
+    } else {
+      setEndTime(null);
+    }
+
     // Don't change isRunning - preserve current running state
     // Don't call onPomodoroComplete - this is a manual skip, not a completion
   };

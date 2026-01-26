@@ -746,4 +746,357 @@ describe('PomodoroTimer Component - Bug Fixes', () => {
       });
     });
   });
+
+  describe('Timestamp-Based Timing (Background Tab Accuracy)', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.spyOn(Date, 'now');
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should set endTime when timer starts', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // endTime should be persisted to localStorage
+      const savedData = localStorage.getItem('pomodoro-stats');
+      expect(savedData).toBeTruthy();
+
+      const parsed = JSON.parse(savedData!);
+      expect(parsed.endTime).toBe(mockNow + (60 * 1000)); // 1 minute = 60 seconds
+    });
+
+    it('should calculate timeLeft from endTime on each tick', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Simulate time passing - 10 seconds
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 10000);
+
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Should show 50 seconds remaining
+      expect(screen.getByText(/00:50/)).toBeInTheDocument();
+    });
+
+    it('should handle delayed/skipped ticks accurately', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Simulate 30 seconds passing in real time, but only 1 tick firing
+      // (simulates heavy throttling in background tab)
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 30000);
+
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Should still show accurate time (30 seconds remaining)
+      expect(screen.getByText(/00:30/)).toBeInTheDocument();
+    });
+
+    it('should clear endTime when timer is paused', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Verify endTime is set
+      let savedData = localStorage.getItem('pomodoro-stats');
+      let parsed = JSON.parse(savedData!);
+      expect(parsed.endTime).toBeTruthy();
+
+      // Pause
+      const pauseButton = screen.getByLabelText(/pause timer/i);
+      fireEvent.click(pauseButton);
+
+      // endTime should be null when paused
+      savedData = localStorage.getItem('pomodoro-stats');
+      parsed = JSON.parse(savedData!);
+      expect(parsed.endTime).toBeNull();
+    });
+
+    it('should set new endTime when resumed after pause', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} />);
+
+      // Start
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Advance 10 seconds
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 10000);
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByText(/00:50/)).toBeInTheDocument();
+
+      // Pause
+      const pauseButton = screen.getByLabelText(/pause timer/i);
+      fireEvent.click(pauseButton);
+
+      // Wait 5 seconds in "real time" (should not affect timer)
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 15000);
+
+      // Resume
+      const resumeButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(resumeButton);
+
+      // New endTime should be current time + remaining time (50 seconds)
+      const savedData = localStorage.getItem('pomodoro-stats');
+      const parsed = JSON.parse(savedData!);
+      expect(parsed.endTime).toBe((mockNow + 15000) + (50 * 1000));
+    });
+
+    it('should clear endTime on reset', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Verify endTime is set
+      let savedData = localStorage.getItem('pomodoro-stats');
+      let parsed = JSON.parse(savedData!);
+      expect(parsed.endTime).toBeTruthy();
+
+      // Reset
+      const resetButton = screen.getByLabelText(/reset timer/i);
+      fireEvent.click(resetButton);
+
+      // endTime should be null
+      savedData = localStorage.getItem('pomodoro-stats');
+      parsed = JSON.parse(savedData!);
+      expect(parsed.endTime).toBeNull();
+    });
+
+    it('should set new endTime when skipping while running', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} shortBreakTime={1} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Verify endTime is set for focus (1 min = 60 sec)
+      let savedData = localStorage.getItem('pomodoro-stats');
+      let parsed = JSON.parse(savedData!);
+      expect(parsed.endTime).toBe(mockNow + 60000);
+
+      // Skip to break (while running)
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      // endTime should be set for the new break session (1 min = 60 sec)
+      savedData = localStorage.getItem('pomodoro-stats');
+      parsed = JSON.parse(savedData!);
+      expect(parsed.endTime).toBe(mockNow + 60000);
+
+      // Now pause the timer
+      const pauseButton = screen.getByLabelText(/pause timer/i);
+      fireEvent.click(pauseButton);
+
+      // Skip while paused
+      fireEvent.click(screen.getByLabelText(/skip session/i));
+
+      // endTime should be null when skipped while paused
+      savedData = localStorage.getItem('pomodoro-stats');
+      parsed = JSON.parse(savedData!);
+      expect(parsed.endTime).toBeNull();
+    });
+
+    it('should detect completion even with heavily delayed tick', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      const onPomodoroComplete = jest.fn();
+      render(<PomodoroTimer {...defaultProps} focusTime={1} onPomodoroComplete={onPomodoroComplete} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Simulate time passing beyond completion (70 seconds instead of 60)
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 70000);
+
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Should have triggered completion
+      expect(onPomodoroComplete).toHaveBeenCalledWith(1, 1);
+    });
+  });
+
+  describe('Page Visibility API (Tab Switching)', () => {
+    let visibilityChangeEvent: Event;
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.spyOn(Date, 'now');
+      visibilityChangeEvent = new Event('visibilitychange');
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should immediately update timeLeft when tab becomes visible', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      // Mock visibility state as hidden initially
+      Object.defineProperty(document, 'visibilityState', {
+        writable: true,
+        value: 'visible',
+      });
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Simulate tab being hidden for 30 seconds
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 30000);
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'hidden',
+      });
+
+      // No ticks fire while hidden (simulating background throttling)
+      // Now tab becomes visible again
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'visible',
+      });
+
+      // Trigger visibility change event
+      act(() => {
+        document.dispatchEvent(visibilityChangeEvent);
+      });
+
+      // Should immediately show correct time (30 seconds remaining)
+      expect(screen.getByText(/00:30/)).toBeInTheDocument();
+    });
+
+    it('should trigger completion if timer ended while tab was hidden', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      Object.defineProperty(document, 'visibilityState', {
+        writable: true,
+        value: 'visible',
+      });
+
+      const onPomodoroComplete = jest.fn();
+      render(<PomodoroTimer {...defaultProps} focusTime={1} onPomodoroComplete={onPomodoroComplete} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Simulate tab being hidden for 70 seconds (beyond completion)
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 70000);
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'hidden',
+      });
+
+      // Tab becomes visible again
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'visible',
+      });
+
+      // Trigger visibility change event
+      act(() => {
+        document.dispatchEvent(visibilityChangeEvent);
+      });
+
+      // Allow next tick to process the completion
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Should have triggered completion
+      expect(onPomodoroComplete).toHaveBeenCalled();
+    });
+
+    it('should not update if timer is not running when tab becomes visible', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      Object.defineProperty(document, 'visibilityState', {
+        writable: true,
+        value: 'visible',
+      });
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} />);
+
+      // Don't start timer
+
+      // Simulate time passing and tab becoming visible
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 30000);
+
+      act(() => {
+        document.dispatchEvent(visibilityChangeEvent);
+      });
+
+      // Should still show full time (not affected by visibility change)
+      expect(screen.getByText(/01:00/)).toBeInTheDocument();
+    });
+
+    it('should not update if endTime is null when tab becomes visible', () => {
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      Object.defineProperty(document, 'visibilityState', {
+        writable: true,
+        value: 'visible',
+      });
+
+      render(<PomodoroTimer {...defaultProps} focusTime={1} />);
+
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Pause timer (clears endTime)
+      const pauseButton = screen.getByLabelText(/pause timer/i);
+      fireEvent.click(pauseButton);
+
+      // Advance time
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 30000);
+
+      // Trigger visibility change
+      act(() => {
+        document.dispatchEvent(visibilityChangeEvent);
+      });
+
+      // Time should not have changed (still paused)
+      expect(screen.getByText(/01:00/)).toBeInTheDocument();
+    });
+  });
 });

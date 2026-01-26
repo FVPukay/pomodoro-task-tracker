@@ -12,6 +12,7 @@ export interface PomodoroStats {
   timeLeft: number;
   isPaused: boolean;
   sessionStartFocusTime: number | null; // Tracks focus time when session started
+  endTime: number | null; // Timestamp when timer should complete (for accuracy)
 }
 
 export interface CompletedStats {
@@ -37,6 +38,7 @@ const DEFAULT_STATS: PomodoroStats = {
   timeLeft: 25 * 60, // Will be updated based on settings
   isPaused: false,
   sessionStartFocusTime: null,
+  endTime: null,
 };
 
 const DEFAULT_COMPLETED: CompletedStats = {
@@ -100,6 +102,7 @@ export const loadStats = (focusTime: number): PomodoroStats => {
       timeLeft: parsed.timeLeft ?? focusTime * 60,
       isPaused: false, // Never restore paused state
       sessionStartFocusTime: parsed.sessionStartFocusTime ?? null,
+      endTime: parsed.endTime ?? null, // Restore endTime for timer accuracy
     };
   } catch (error) {
     console.error('Failed to load pomodoro stats:', error);
