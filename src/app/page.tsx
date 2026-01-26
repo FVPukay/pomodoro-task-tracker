@@ -151,8 +151,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right column - max-height prevents expansion, Tasks scrolls internally */}
-          <div className="flex flex-col min-w-0 h-full max-h-[500px] md:max-h-[700px]">
+          {/* Right column - viewport-based max-height prevents expansion, Tasks scrolls internally */}
+          <div className="flex flex-col min-w-0 h-full max-h-[calc(100vh-90px)]">
             <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
               <Tasks />
             </div>
