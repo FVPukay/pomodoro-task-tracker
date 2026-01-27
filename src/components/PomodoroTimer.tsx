@@ -258,6 +258,9 @@ export default function PomodoroTimer({
     // Single responsibility: Only switch mode, preserve running state
     // Clear session start time - user is abandoning current session
     setSessionStartFocusTime(null);
+    // Reset paused state - skipping starts a fresh session, not a paused one
+    // This allows settings sync effect to update timeLeft when settings change
+    setIsPaused(false);
 
     let newTimeLeft: number;
     if (isFocusSession) {

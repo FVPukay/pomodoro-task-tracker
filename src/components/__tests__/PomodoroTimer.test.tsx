@@ -1099,4 +1099,122 @@ describe('PomodoroTimer Component - Bug Fixes', () => {
       expect(screen.getByText(/01:00/)).toBeInTheDocument();
     });
   });
+
+  describe('Bug #3: Progress bar incorrect after skipping while paused then changing settings', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.spyOn(Date, 'now');
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should reset isPaused when skipping, allowing settings to sync timeLeft', () => {
+      // This tests the bug where:
+      // 1. Complete focus session -> auto-start break
+      // 2. Pause break
+      // 3. Skip to focus (isPaused should reset to false)
+      // 4. Change focusTime -> timeLeft should update (was blocked by isPaused=true)
+
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      const onPomodoroComplete = jest.fn();
+      const { rerender } = render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={1}
+          completedPomodoros={0}
+          onPomodoroComplete={onPomodoroComplete}
+        />
+      );
+
+      // Start timer
+      const startButton = screen.getByLabelText(/start timer/i);
+      fireEvent.click(startButton);
+
+      // Complete the focus session (advance to 0)
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 60000); // 1 minute later
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Now in break mode, timer auto-started
+      expect(onPomodoroComplete).toHaveBeenCalledWith(1, 1);
+
+      // Pause the break timer
+      const pauseButton = screen.getByLabelText(/pause timer/i);
+      fireEvent.click(pauseButton);
+
+      // Skip back to focus
+      const skipButton = screen.getByLabelText(/skip session/i);
+      fireEvent.click(skipButton);
+
+      // Now change focusTime from 1 to 2 minutes
+      rerender(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={2}
+          shortBreakTime={1}
+          completedPomodoros={1}
+          onPomodoroComplete={onPomodoroComplete}
+        />
+      );
+
+      // The timer should show 02:00, not 01:00
+      // If isPaused wasn't reset, settings sync would be blocked and timeLeft would stay at 60
+      expect(screen.getByText(/02:00/)).toBeInTheDocument();
+    });
+
+    it('should show 0% progress after skipping while paused and changing settings', () => {
+      // More direct test: verify progress bar is at 0% (not 50% or 100%)
+      const mockNow = 1000000000000;
+      (Date.now as jest.Mock).mockReturnValue(mockNow);
+
+      const onPomodoroComplete = jest.fn();
+      const { container, rerender } = render(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={1}
+          shortBreakTime={1}
+          completedPomodoros={0}
+          onPomodoroComplete={onPomodoroComplete}
+        />
+      );
+
+      // Start and complete focus session
+      fireEvent.click(screen.getByLabelText(/start timer/i));
+      (Date.now as jest.Mock).mockReturnValue(mockNow + 60000);
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      // Pause break, skip to focus
+      fireEvent.click(screen.getByLabelText(/pause timer/i));
+      fireEvent.click(screen.getByLabelText(/skip session/i));
+
+      // Change focusTime to 2 minutes
+      rerender(
+        <PomodoroTimer
+          {...defaultProps}
+          focusTime={2}
+          shortBreakTime={1}
+          completedPomodoros={1}
+          onPomodoroComplete={onPomodoroComplete}
+        />
+      );
+
+      // Check progress bar - should be at 0% (strokeDashoffset = circumference)
+      const progressCircle = container.querySelector('circle[stroke="url(#progressGradient)"]');
+      expect(progressCircle).toBeInTheDocument();
+
+      const circumference = 2 * Math.PI * 144; // radius = 144
+      const strokeDashoffset = progressCircle?.getAttribute('stroke-dashoffset');
+
+      // At 0% progress, strokeDashoffset should equal circumference
+      expect(parseFloat(strokeDashoffset || '0')).toBeCloseTo(circumference, 0);
+    });
+  });
 });
