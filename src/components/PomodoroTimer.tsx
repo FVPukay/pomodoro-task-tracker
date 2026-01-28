@@ -216,6 +216,41 @@ export default function PomodoroTimer({
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [isRunning, endTime]);
 
+  // Update browser tab title to show timer state
+  useEffect(() => {
+    // Show default title if timer hasn't been started yet
+    if (endTime === null && !isRunning && !isPaused) {
+      document.title = 'Pomodoro Task Tracker';
+      return;
+    }
+
+    // Determine session type
+    let sessionType: string;
+    if (isFocusSession) {
+      sessionType = 'Focus';
+    } else {
+      // Determine if it's a short or long break
+      const isLongBreak = completedPomodoros > 0 && completedPomodoros % 4 === 0;
+      sessionType = isLongBreak ? 'Long Break' : 'Short Break';
+    }
+
+    // Format time as MM:SS
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+    // Calculate pomodoro circles (same logic as visual circles)
+    const pomodoroInSet = (completedPomodoros % 4 === 0 && completedPomodoros > 0 && !isFocusSession)
+      ? 4
+      : completedPomodoros % 4;
+    const circles = '●'.repeat(pomodoroInSet) + '○'.repeat(4 - pomodoroInSet);
+
+    // Use pause icon if paused, otherwise use dash
+    const separator = isPaused ? '⏸' : '-';
+
+    document.title = `${sessionType} ${separator} ${formattedTime} - ${circles}`;
+  }, [timeLeft, isFocusSession, isRunning, isPaused, completedPomodoros, endTime]);
+
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;

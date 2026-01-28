@@ -22,6 +22,15 @@ A modern, minimalist Pomodoro timer with integrated task management to help you 
 - 🗂️ **Drag & drop** - Reorder tasks easily
 - 💾 **Auto-save** - All data saved to localStorage
 
+### Browser Tab Integration
+- 🏷️ **Dynamic tab title** - See timer countdown and progress without switching tabs
+- 🍅 **Tomato favicon** - Easy tab identification in crowded tab bars
+- ⚫ **Progress circles** - Filled/empty circles (●/○) show completed pomodoros
+- ⏸️ **Pause indicator** - Visual indicator when timer is paused
+- 📋 **Session type** - Clear labels for Focus, Short Break, or Long Break
+
+Example: `Focus - 24:35 - ○○○○` → `Focus - 24:34 - ●○○○`
+
 ### Privacy & Performance
 - 🔒 **100% private** - All data stored locally in your browser, never sent to servers
 - 🚫 **No ads, no tracking, no signups** - Completely ad-free experience
