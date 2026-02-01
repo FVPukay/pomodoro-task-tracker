@@ -39,7 +39,7 @@ Example: `Focus - 24:35 - ○○○○` → `Focus - 24:34 - ●○○○`
 
 ## Tech Stack
 
-- **Framework**: [Next.js 15](https://nextjs.org/) with React 19
+- **Framework**: [Next.js 16](https://nextjs.org/) with React 19
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (strict mode)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Testing**: [Jest](https://jestjs.io/) + [React Testing Library](https://testing-library.com/)
