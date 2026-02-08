@@ -18,8 +18,12 @@ export async function POST(request: Request) {
     // Use shared Redis client (no connect/quit needed)
     const client = await getRedisClient();
 
-    // Increment counter
+    // Increment total counter
     const newValue = await client.incr(`total_${event}`);
+
+    // Increment monthly bucket (e.g. visits:2026-02)
+    const month = new Date().toISOString().slice(0, 7);
+    await client.incr(`${event}:${month}`);
 
     return NextResponse.json({
       event,
